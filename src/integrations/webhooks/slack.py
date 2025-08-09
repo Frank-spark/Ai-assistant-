@@ -181,7 +181,7 @@ async def handle_approval_action(
         # and trigger the approved action (send email, create task, etc.)
         
         # Send confirmation to the channel
-        # await send_slack_message(channel_id, f"✅ Approved by <@{user_id}>")
+        # await send_slack_message(channel_id, f"Approved by <@{user_id}>")
 
 
 async def handle_rejection_action(

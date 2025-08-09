@@ -293,7 +293,7 @@ class WorkflowEngine:
             slack_client = get_slack_client()
             
             # This would typically look up the original request details
-            message = f"✅ Your request has been approved!\n\nRequest ID: {source_id}\nApproved at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            message = f"Your request has been approved!\n\nRequest ID: {source_id}\nApproved at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
             
             # Send to appropriate channel or user
             # For now, we'll use a default channel
@@ -464,7 +464,7 @@ class WorkflowEngine:
                 slack_client = get_slack_client()
                 await slack_client.send_dm(
                     assignee,
-                    f"📋 New task assigned: *{task_name}*\n\nProject: {project_id}\nDue: {due_date or 'No due date'}\n\n{description or 'No description'}"
+                    f"New task assigned: *{task_name}*\n\nProject: {project_id}\nDue: {due_date or 'No due date'}\n\n{description or 'No description'}"
                 )
             
             return {
