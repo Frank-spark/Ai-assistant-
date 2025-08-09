@@ -55,7 +55,7 @@ Reflex Executive Assistant is a persistent, AI-driven agent for Spark Robotic. I
 
 Create a dedicated identity for the assistant.
 
-* Email: [assistant@sparkrobotic.com](mailto:assistant@sparkrobotic.com) (Google Workspace)
+* Email: [sparkroboticai@gmail.com](mailto:sparkroboticai@gmail.com) (Google Workspace)
 * Slack: invite the email as a user and assign required channels
 * Asana: invite the email to the organization and projects with appropriate permissions
 
