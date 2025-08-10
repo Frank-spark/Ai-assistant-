@@ -398,13 +398,13 @@ Generate only the injection text (not the full message):"""
             
             # Add appropriate formatting based on channel
             if channel == CommunicationChannel.SLACK:
-                return f"\n💡 *Strategic Reminder:* {injection}"
+                return f"\n*Strategic Reminder:* {injection}"
             elif channel == CommunicationChannel.EMAIL:
                 return f"\n\n*Strategic Context:* {injection}"
             elif channel == CommunicationChannel.ASANA:
-                return f"\n🎯 *Goal Alignment:* {injection}"
+                return f"\n*Goal Alignment:* {injection}"
             elif channel == CommunicationChannel.MEETING:
-                return f"\n📋 *Meeting Context:* {injection}"
+                return f"\n*Meeting Context:* {injection}"
             else:
                 return f"\n{injection}"
                 

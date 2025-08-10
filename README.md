@@ -1,15 +1,16 @@
 # Reflex Executive AI Assistant
 
-> **The AI assistant that helps executives create exceptional workplaces and lead with compassion.**
+> **The premium AI assistant that transforms executives into exceptional leaders and creates workplaces where people thrive.**
 
 [![Premium Executive](https://img.shields.io/badge/Premium-Executive-gold.svg)](https://reflex.ai)
 [![Culture Focus](https://img.shields.io/badge/Culture-Focused-purple.svg)](https://reflex.ai)
 [![Voice First](https://img.shields.io/badge/Voice-First-blue.svg)](https://reflex.ai)
 [![Enterprise Grade](https://img.shields.io/badge/Enterprise-Grade-red.svg)](https://reflex.ai)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-green.svg)](https://reflex.ai/demo)
 
 ## **What is Reflex?**
 
-**Reflex is your AI leadership partner that helps you create a workplace where people thrive.**
+**Reflex is the world's first AI assistant designed specifically for executive-level culture transformation and leadership excellence.**
 
 ### **The Executive's Challenge**
 
@@ -36,6 +37,32 @@ As a CEO or senior leader, you want to:
 - **Make smarter decisions** by considering both business and people impact
 - **Stay connected** to what matters most in your organization
 - **Scale effectively** while maintaining your values and culture
+
+## **Live Executive Demo**
+
+**See Reflex in action with our interactive executive dashboard:**
+
+### **One-Click Demo Launch**
+```bash
+# Start the complete demo environment
+docker-compose -f docker-compose.demo.yml up -d
+
+# Access the executive dashboard
+open http://localhost:8000/dashboard
+```
+
+### **What You'll Experience:**
+- **Real-time executive metrics** - Time saved, culture scores, decision confidence
+- **AI-powered insights** - Strategic recommendations and cultural intelligence
+- **Revenue intelligence** - Opportunity detection and automated follow-ups
+- **Cultural analytics** - Team sentiment and engagement tracking
+- **Decision support** - AI-powered analysis with cultural impact consideration
+
+### **Demo Credentials:**
+- **Executive Dashboard**: http://localhost:8000/dashboard
+- **Analytics**: http://localhost:8000/analytics
+- **Revenue Intelligence**: http://localhost:8000/revenue
+- **Culture Insights**: http://localhost:8000/culture
 
 ## **How It Works (Simple)**
 
@@ -127,15 +154,15 @@ Reflex: "Based on recent feedback:
 
 ## **Getting Started (3 Steps)**
 
-### **Step 1: Schedule a Consultation (15 minutes)**
+### **Step 1: Try the Demo (2 minutes)**
+1. Launch the demo: `docker-compose -f docker-compose.demo.yml up -d`
+2. Visit: http://localhost:8000/dashboard
+3. Experience the executive dashboard with real data
+
+### **Step 2: Schedule a Consultation (15 minutes)**
 1. Book a free strategy session at [reflex.ai/consultation](https://reflex.ai/consultation)
 2. Tell us about your company and goals
 3. See how Reflex can help you
-
-### **Step 2: Set Up Your AI Assistant (30 minutes)**
-1. We'll configure Reflex to understand your company
-2. Connect your existing tools (Slack, Gmail, etc.)
-3. Train your team on how to use it
 
 ### **Step 3: Start Leading Better (Immediately)**
 1. Begin having conversations with your AI assistant
@@ -171,10 +198,10 @@ Reflex: "Based on recent feedback:
 - Regular security audits
 
 ### **What We Don't Do**
-- ❌ Sell your data to anyone
-- ❌ Use your conversations for training
-- ❌ Share your information with competitors
-- ❌ Store sensitive data insecurely
+- Sell your data to anyone
+- Use your conversations for training
+- Share your information with competitors
+- Store sensitive data insecurely
 
 ## **Support When You Need It**
 
@@ -194,12 +221,14 @@ Reflex: "Based on recent feedback:
 
 ### **Start Your Journey Today**
 
-1. **Schedule a Consultation**: [Book your free session](https://reflex.ai/consultation)
-2. **See It in Action**: Watch a personalized demo
-3. **Start Your Trial**: Begin with a 30-day trial
-4. **Transform Your Leadership**: Create the workplace you've always wanted
+1. **Try the Demo**: [Launch Demo](http://localhost:8000/dashboard)
+2. **Schedule a Consultation**: [Book your free session](https://reflex.ai/consultation)
+3. **See It in Action**: Watch a personalized demo
+4. **Start Your Trial**: Begin with a 30-day trial
+5. **Transform Your Leadership**: Create the workplace you've always wanted
 
 ### **No Risk, All Reward**
+- **Free demo** to experience the difference
 - **Free consultation** to see if it's right for you
 - **30-day trial** to experience the difference
 - **No setup fees** or hidden costs

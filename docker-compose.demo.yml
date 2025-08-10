@@ -1,220 +1,80 @@
 version: '3.8'
 
 services:
-  # Main application
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: production
+  # Main Application
+  reflex-app:
+    build: .
     ports:
-      - "8080:8080"
+      - "8000:8000"
     environment:
-      - APP_ENV=demo
-      - DEBUG=true
-      - LOG_LEVEL=INFO
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - POSTGRES_URL=postgresql://reflex_user:reflex_password@postgres:5432/reflex_demo
-      - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=demo-secret-key-32-chars-minimum-for-demo
-      - JWT_SECRET=demo-jwt-secret-32-chars-minimum-for-demo
-      - WEBHOOK_BASE_URL=http://localhost:8080
+      - DATABASE_URL=postgresql://reflex:reflex123@demo-db:5432/reflex_demo
+      - REDIS_URL=redis://demo-redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-demo-key}
+      - MODEL_NAME=gpt-4
+      - SECRET_KEY=demo-secret-key-123
+      - JWT_SECRET=demo-jwt-secret-123
       - SMTP_USERNAME=sparkroboticai@gmail.com
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
-      # Demo integrations (mock)
-      - SLACK_BOT_TOKEN=xoxb-demo-token
-      - SLACK_SIGNING_SECRET=demo-signing-secret
-      - SLACK_APP_LEVEL_TOKEN=xapp-demo-token
-      - SLACK_VERIFICATION_TOKEN=demo-verification-token
-      - GMAIL_CLIENT_ID=demo-gmail-client-id
-      - GMAIL_CLIENT_SECRET=demo-gmail-client-secret
-      - GMAIL_REDIRECT_URI=http://localhost:8080/oauth/callback
-      - ASANA_ACCESS_TOKEN=demo-asana-token
-      - ASANA_WORKSPACE_ID=demo-workspace-id
-      - ASANA_WEBHOOK_SECRET=demo-webhook-secret
-      - STRIPE_SECRET_KEY=demo-stripe-key
-      - STRIPE_WEBHOOK_SECRET=demo-stripe-webhook
-    depends_on:
-      - postgres
-      - redis
+      - SMTP_PASSWORD=demo-password
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:-demo-token}
+      - GMAIL_CREDENTIALS_FILE=/app/demo-credentials.json
+      - ASANA_ACCESS_TOKEN=${ASANA_ACCESS_TOKEN:-demo-token}
     volumes:
-      - ./data:/app/data
-    networks:
-      - reflex-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Background task worker
-  celery:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: production
-    command: celery -A src.jobs.celery_app worker --loglevel=info --concurrency=2
-    environment:
-      - APP_ENV=demo
-      - DEBUG=true
-      - LOG_LEVEL=INFO
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - POSTGRES_URL=postgresql://reflex_user:reflex_password@postgres:5432/reflex_demo
-      - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=demo-secret-key-32-chars-minimum-for-demo
-      - JWT_SECRET=demo-jwt-secret-32-chars-minimum-for-demo
-      - WEBHOOK_BASE_URL=http://localhost:8080
-      - SMTP_USERNAME=sparkroboticai@gmail.com
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
-      # Demo integrations (mock)
-      - SLACK_BOT_TOKEN=xoxb-demo-token
-      - SLACK_SIGNING_SECRET=demo-signing-secret
-      - SLACK_APP_LEVEL_TOKEN=xapp-demo-token
-      - SLACK_VERIFICATION_TOKEN=demo-verification-token
-      - GMAIL_CLIENT_ID=demo-gmail-client-id
-      - GMAIL_CLIENT_SECRET=demo-gmail-client-secret
-      - GMAIL_REDIRECT_URI=http://localhost:8080/oauth/callback
-      - ASANA_ACCESS_TOKEN=demo-asana-token
-      - ASANA_WORKSPACE_ID=demo-workspace-id
-      - ASANA_WEBHOOK_SECRET=demo-webhook-secret
-      - STRIPE_SECRET_KEY=demo-stripe-key
-      - STRIPE_WEBHOOK_SECRET=demo-stripe-webhook
+      - ./demo-data:/app/data
+      - ./demo-credentials.json:/app/demo-credentials.json
     depends_on:
-      - postgres
-      - redis
-    volumes:
-      - ./data:/app/data
-    networks:
-      - reflex-network
+      - demo-db
+      - demo-redis
+    command: >
+      sh -c "
+        echo 'Starting Reflex AI Demo...' &&
+        echo 'Loading demo data...' &&
+        python scripts/load_demo_data.py &&
+        echo 'Starting web server...' &&
+        uvicorn src.app:app --host 0.0.0.0 --port 8000 --reload
+      "
 
-  # Celery beat scheduler
-  celery-beat:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: production
-    command: celery -A src.jobs.celery_app beat --loglevel=info
-    environment:
-      - APP_ENV=demo
-      - DEBUG=true
-      - LOG_LEVEL=INFO
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - POSTGRES_URL=postgresql://reflex_user:reflex_password@postgres:5432/reflex_demo
-      - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=demo-secret-key-32-chars-minimum-for-demo
-      - JWT_SECRET=demo-jwt-secret-32-chars-minimum-for-demo
-      - WEBHOOK_BASE_URL=http://localhost:8080
-      - SMTP_USERNAME=sparkroboticai@gmail.com
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
-      # Demo integrations (mock)
-      - SLACK_BOT_TOKEN=xoxb-demo-token
-      - SLACK_SIGNING_SECRET=demo-signing-secret
-      - SLACK_APP_LEVEL_TOKEN=xapp-demo-token
-      - SLACK_VERIFICATION_TOKEN=demo-verification-token
-      - GMAIL_CLIENT_ID=demo-gmail-client-id
-      - GMAIL_CLIENT_SECRET=demo-gmail-client-secret
-      - GMAIL_REDIRECT_URI=http://localhost:8080/oauth/callback
-      - ASANA_ACCESS_TOKEN=demo-asana-token
-      - ASANA_WORKSPACE_ID=demo-workspace-id
-      - ASANA_WEBHOOK_SECRET=demo-webhook-secret
-      - STRIPE_SECRET_KEY=demo-stripe-key
-      - STRIPE_WEBHOOK_SECRET=demo-stripe-webhook
-    depends_on:
-      - postgres
-      - redis
-    volumes:
-      - ./data:/app/data
-    networks:
-      - reflex-network
-
-  # PostgreSQL database
-  postgres:
-    image: postgres:15-alpine
+  # Demo Database
+  demo-db:
+    image: postgres:14
     environment:
       - POSTGRES_DB=reflex_demo
-      - POSTGRES_USER=reflex_user
-      - POSTGRES_PASSWORD=reflex_password
+      - POSTGRES_USER=reflex
+      - POSTGRES_PASSWORD=reflex123
+    volumes:
+      - demo_postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-demo-db.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
-    networks:
-      - reflex-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U reflex_user -d reflex_demo"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
-  # Redis cache and message broker
-  redis:
+  # Demo Redis
+  demo-redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
-    networks:
-      - reflex-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - demo_redis_data:/data
 
-  # Mock Slack API for demo
-  mock-slack:
-    image: mockserver/mockserver:latest
+  # Demo Analytics Dashboard
+  demo-grafana:
+    image: grafana/grafana:latest
     ports:
-      - "1080:1080"
+      - "3000:3000"
     environment:
-      - MOCKSERVER_INITIALIZATION_JSON_PATH=/config/mock-slack.json
+      - GF_SECURITY_ADMIN_PASSWORD=demo123
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
     volumes:
-      - ./mocks/slack.json:/config/mock-slack.json
-    networks:
-      - reflex-network
+      - demo_grafana_data:/var/lib/grafana
+      - ./demo-config/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./demo-config/grafana/datasources:/etc/grafana/provisioning/datasources
 
-  # Mock Gmail API for demo
-  mock-gmail:
-    image: mockserver/mockserver:latest
-    ports:
-      - "1081:1080"
-    environment:
-      - MOCKSERVER_INITIALIZATION_JSON_PATH=/config/mock-gmail.json
-    volumes:
-      - ./mocks/gmail.json:/config/mock-gmail.json
-    networks:
-      - reflex-network
-
-  # Mock Asana API for demo
-  mock-asana:
-    image: mockserver/mockserver:latest
-    ports:
-      - "1082:1080"
-    environment:
-      - MOCKSERVER_INITIALIZATION_JSON_PATH=/config/mock-asana.json
-    volumes:
-      - ./mocks/asana.json:/config/mock-asana.json
-    networks:
-      - reflex-network
-
-  # Prometheus monitoring
-  prometheus:
+  # Demo Prometheus
+  demo-prometheus:
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
+      - ./demo-config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - demo_prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -222,77 +82,20 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--storage.tsdb.retention.time=200h'
       - '--web.enable-lifecycle'
-    networks:
-      - reflex-network
 
-  # Grafana dashboards
-  grafana:
-    image: grafana/grafana:latest
+  # Demo Email Server (for testing)
+  demo-mailhog:
+    image: mailhog/mailhog:latest
     ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
-    depends_on:
-      - prometheus
-    networks:
-      - reflex-network
-
-  # Demo seeder (runs once to populate data)
-  demo-seeder:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: production
-    command: python scripts/demo_seed.py
-    environment:
-      - APP_ENV=demo
-      - DEBUG=true
-      - LOG_LEVEL=INFO
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - POSTGRES_URL=postgresql://reflex_user:reflex_password@postgres:5432/reflex_demo
-      - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=demo-secret-key-32-chars-minimum-for-demo
-      - JWT_SECRET=demo-jwt-secret-32-chars-minimum-for-demo
-      - WEBHOOK_BASE_URL=http://localhost:8080
-      - SMTP_USERNAME=sparkroboticai@gmail.com
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - CELERY_BROKER_URL=redis://redis:6379/1
-      - CELERY_RESULT_BACKEND=redis://redis:6379/2
-      # Demo integrations (mock)
-      - SLACK_BOT_TOKEN=xoxb-demo-token
-      - SLACK_SIGNING_SECRET=demo-signing-secret
-      - SLACK_APP_LEVEL_TOKEN=xapp-demo-token
-      - SLACK_VERIFICATION_TOKEN=demo-verification-token
-      - GMAIL_CLIENT_ID=demo-gmail-client-id
-      - GMAIL_CLIENT_SECRET=demo-gmail-client-secret
-      - GMAIL_REDIRECT_URI=http://localhost:8080/oauth/callback
-      - ASANA_ACCESS_TOKEN=demo-asana-token
-      - ASANA_WORKSPACE_ID=demo-workspace-id
-      - ASANA_WEBHOOK_SECRET=demo-webhook-secret
-      - STRIPE_SECRET_KEY=demo-stripe-key
-      - STRIPE_WEBHOOK_SECRET=demo-stripe-webhook
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - ./data:/app/data
-    networks:
-      - reflex-network
-    restart: "no"
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
 
 volumes:
-  postgres_data:
-  redis_data:
-  prometheus_data:
-  grafana_data:
+  demo_postgres_data:
+  demo_redis_data:
+  demo_grafana_data:
+  demo_prometheus_data:
 
 networks:
-  reflex-network:
-    driver: bridge 
+  default:
+    name: reflex-demo-network 
