@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+
+{% block title %}AI Playground - Reflex AI Assistant{% endblock %}
+
+{% block extra_head %}
+<style>
+    .chat-container {
+        height: 500px;
+        overflow-y: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1rem;
+        background: #f9fafb;
+    }
+    
+    .message {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-radius: 8px;
+        max-width: 80%;
+    }
+    
+    .message.user {
+        background: #3b82f6;
+        color: white;
+        margin-left: auto;
+    }
+    
+    .message.assistant {
+        background: white;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .message.system {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        font-style: italic;
+    }
+    
+    .template-card {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .template-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .model-selector {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    
+    .response-time {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+    
+    .token-counter {
+        background: #f3f4f6;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        color: #374151;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">AI Playground</h1>
+    <p class="mt-2 text-gray-600">Test and experiment with your AI assistant in real-time</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Templates Panel -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Templates</h3>
+            
+            <div class="space-y-3">
+                <div class="template-card bg-blue-50 border border-blue-200 rounded-lg p-4" onclick="loadTemplate('faq')">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-question text-blue-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900">FAQ Bot</h4>
+                            <p class="text-sm text-gray-600">Customer support questions</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="template-card bg-green-50 border border-green-200 rounded-lg p-4" onclick="loadTemplate('task')">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-tasks text-green-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900">Task Assistant</h4>
+                            <p class="text-sm text-gray-600">Project management help</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="template-card bg-purple-50 border border-purple-200 rounded-lg p-4" onclick="loadTemplate('email')">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-envelope text-purple-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900">Email Writer</h4>
+                            <p class="text-sm text-gray-600">Professional email drafting</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="template-card bg-orange-50 border border-orange-200 rounded-lg p-4" onclick="loadTemplate('meeting')">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-calendar text-orange-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900">Meeting Assistant</h4>
+                            <p class="text-sm text-gray-600">Agenda and notes</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="template-card bg-red-50 border border-red-200 rounded-lg p-4" onclick="loadTemplate('analysis')">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-chart-line text-red-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900">Data Analysis</h4>
+                            <p class="text-sm text-gray-600">Business insights</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Model Configuration -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Model Configuration</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Language Model</label>
+                    <select id="model-selector" class="model-selector w-full">
+                        <option value="gpt-4o-mini">GPT-4o Mini (Fast & Cost-effective)</option>
+                        <option value="gpt-4o">GPT-4o (Balanced)</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo (High Quality)</option>
+                        <option value="claude-3-haiku">Claude 3 Haiku (Fast)</option>
+                        <option value="claude-3-sonnet">Claude 3 Sonnet (Balanced)</option>
+                        <option value="claude-3-opus">Claude 3 Opus (High Quality)</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Temperature</label>
+                    <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7" class="w-full">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>Focused (0)</span>
+                        <span id="temp-value">0.7</span>
+                        <span>Creative (2)</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Max Tokens</label>
+                    <input type="range" id="max-tokens" min="100" max="4000" step="100" value="1000" class="w-full">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>100</span>
+                        <span id="token-value">1000</span>
+                        <span>4000</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chat Interface -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Chat Interface</h3>
+                <div class="flex items-center space-x-4">
+                    <span class="token-counter" id="token-counter">Tokens: 0</span>
+                    <button onclick="clearChat()" class="text-sm text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-trash mr-1"></i>Clear
+                    </button>
+                </div>
+            </div>
+            
+            <div class="chat-container" id="chat-container">
+                <div class="message system">
+                    <strong>System:</strong> Welcome to the Reflex AI Playground! Choose a template or start chatting with your AI assistant. You can test different models and configurations in real-time.
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <div class="flex space-x-2">
+                    <input type="text" id="message-input" placeholder="Type your message..." 
+                           class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button onclick="sendMessage()" id="send-button" 
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                    <span class="text-xs text-gray-500">Press Enter to send</span>
+                    <span class="text-xs text-gray-500" id="response-time"></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Analytics Panel -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Session Analytics</h3>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600" id="total-messages">0</div>
+                    <div class="text-sm text-gray-500">Messages</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600" id="avg-response-time">0ms</div>
+                    <div class="text-sm text-gray-500">Avg Response</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600" id="total-tokens">0</div>
+                    <div class="text-sm text-gray-500">Tokens Used</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-orange-600" id="estimated-cost">$0.00</div>
+                    <div class="text-sm text-gray-500">Est. Cost</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Templates
+const templates = {
+    faq: {
+        title: "FAQ Bot",
+        messages: [
+            "What are your business hours?",
+            "How do I reset my password?",
+            "What payment methods do you accept?",
+            "Can I cancel my subscription anytime?"
+        ]
+    },
+    task: {
+        title: "Task Assistant",
+        messages: [
+            "Create a project plan for launching a new product",
+            "Set up a meeting with the marketing team",
+            "Draft an email to stakeholders about the Q4 results",
+            "Create a task list for onboarding a new employee"
+        ]
+    },
+    email: {
+        title: "Email Writer",
+        messages: [
+            "Write a professional email to schedule a meeting",
+            "Draft a follow-up email after a client presentation",
+            "Create an announcement email for a new feature launch",
+            "Write a thank you email after a successful project"
+        ]
+    },
+    meeting: {
+        title: "Meeting Assistant",
+        messages: [
+            "Create an agenda for a weekly team meeting",
+            "Generate meeting notes from a discussion about Q4 goals",
+            "Schedule a 30-minute meeting with three team members",
+            "Create action items from a project review meeting"
+        ]
+    },
+    analysis: {
+        title: "Data Analysis",
+        messages: [
+            "Analyze our sales data for the last quarter",
+            "Create a summary of customer feedback trends",
+            "Generate insights from our website analytics",
+            "Analyze team productivity metrics"
+        ]
+    }
+};
+
+// Session data
+let sessionData = {
+    messages: 0,
+    totalTokens: 0,
+    responseTimes: [],
+    estimatedCost: 0
+};
+
+// Load template
+function loadTemplate(templateKey) {
+    const template = templates[templateKey];
+    if (!template) return;
+    
+    // Add template messages to chat
+    template.messages.forEach((message, index) => {
+        setTimeout(() => {
+            addMessage(message, 'user');
+            // Simulate AI response
+            setTimeout(() => {
+                addMessage(`This is a sample response for: "${message}"`, 'assistant');
+            }, 1000);
+        }, index * 2000);
+    });
+}
+
+// Send message
+function sendMessage() {
+    const input = document.getElementById('message-input');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    addMessage(message, 'user');
+    input.value = '';
+    
+    // Simulate AI response (replace with actual API call)
+    const startTime = Date.now();
+    document.getElementById('send-button').disabled = true;
+    
+    setTimeout(() => {
+        const responseTime = Date.now() - startTime;
+        addMessage(`This is a simulated response to: "${message}". In production, this would be a real AI response.`, 'assistant', responseTime);
+        document.getElementById('send-button').disabled = false;
+    }, 1500);
+}
+
+// Add message to chat
+function addMessage(content, type, responseTime = null) {
+    const container = document.getElementById('chat-container');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}`;
+    
+    const timestamp = new Date().toLocaleTimeString();
+    messageDiv.innerHTML = `
+        <div class="flex justify-between items-start">
+            <div class="flex-1">
+                <strong>${type === 'user' ? 'You' : 'AI Assistant'}:</strong>
+                <div class="mt-1">${content}</div>
+            </div>
+            <div class="text-xs text-gray-500 ml-2">${timestamp}</div>
+        </div>
+        ${responseTime ? `<div class="response-time">Response time: ${responseTime}ms</div>` : ''}
+    `;
+    
+    container.appendChild(messageDiv);
+    container.scrollTop = container.scrollHeight;
+    
+    // Update analytics
+    updateAnalytics(type, responseTime);
+}
+
+// Update analytics
+function updateAnalytics(type, responseTime) {
+    sessionData.messages++;
+    
+    if (responseTime) {
+        sessionData.responseTimes.push(responseTime);
+    }
+    
+    if (type === 'assistant') {
+        sessionData.totalTokens += Math.ceil(Math.random() * 100) + 50; // Simulate token count
+        sessionData.estimatedCost += (sessionData.totalTokens * 0.00001); // Rough cost estimate
+    }
+    
+    document.getElementById('total-messages').textContent = sessionData.messages;
+    document.getElementById('total-tokens').textContent = sessionData.totalTokens;
+    document.getElementById('estimated-cost').textContent = `$${sessionData.estimatedCost.toFixed(4)}`;
+    
+    if (sessionData.responseTimes.length > 0) {
+        const avgTime = Math.round(sessionData.responseTimes.reduce((a, b) => a + b, 0) / sessionData.responseTimes.length);
+        document.getElementById('avg-response-time').textContent = `${avgTime}ms`;
+    }
+    
+    document.getElementById('token-counter').textContent = `Tokens: ${sessionData.totalTokens}`;
+}
+
+// Clear chat
+function clearChat() {
+    document.getElementById('chat-container').innerHTML = `
+        <div class="message system">
+            <strong>System:</strong> Chat cleared. Start a new conversation!
+        </div>
+    `;
+    sessionData = {
+        messages: 0,
+        totalTokens: 0,
+        responseTimes: [],
+        estimatedCost: 0
+    };
+    updateAnalytics();
+}
+
+// Event listeners
+document.getElementById('message-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+
+document.getElementById('temperature').addEventListener('input', function(e) {
+    document.getElementById('temp-value').textContent = e.target.value;
+});
+
+document.getElementById('max-tokens').addEventListener('input', function(e) {
+    document.getElementById('token-value').textContent = e.target.value;
+});
+
+// Initialize
+updateAnalytics();
+</script>
+{% endblock %} 

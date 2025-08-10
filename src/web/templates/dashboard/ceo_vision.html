@@ -1,0 +1,650 @@
+{% extends "base.html" %}
+
+{% block title %}CEO Vision Dashboard - Reflex AI Assistant{% endblock %}
+
+{% block extra_head %}
+<style>
+    .vision-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .voice-controls {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .voice-button {
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .voice-button:hover {
+        background: #45a049;
+        transform: scale(1.1);
+    }
+    
+    .voice-button.recording {
+        background: #f44336;
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    .conversation-container {
+        height: 400px;
+        overflow-y: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1rem;
+        background: #f9fafb;
+    }
+    
+    .message {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-radius: 8px;
+        max-width: 80%;
+    }
+    
+    .message.ceo {
+        background: #3b82f6;
+        color: white;
+        margin-left: auto;
+    }
+    
+    .message.assistant {
+        background: white;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .vision-section {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .kpi-card {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+    }
+    
+    .action-item {
+        background: #f3f4f6;
+        border-left: 4px solid #3b82f6;
+        padding: 0.75rem;
+        margin: 0.5rem 0;
+        border-radius: 4px;
+    }
+    
+    .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+    }
+    
+    .status-on-track { background: #10b981; }
+    .status-warning { background: #f59e0b; }
+    .status-critical { background: #ef4444; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">CEO Vision Dashboard</h1>
+    <p class="mt-2 text-gray-600">Guide your team with AI-powered executive leadership</p>
+</div>
+
+<!-- CEO Vision Overview -->
+<div class="vision-card">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-bold">{{ company_name }}</h2>
+            <p class="text-lg opacity-90">CEO: {{ ceo_name }}</p>
+            <p class="opacity-75">{{ industry }} Industry</p>
+        </div>
+        <div class="text-right">
+            <div class="text-3xl font-bold">{{ current_year }}</div>
+            <div class="text-sm opacity-75">Strategic Year</div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Voice Conversation Interface -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">AI Executive Assistant</h3>
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-500">Voice Mode:</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="voice-toggle" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Voice Controls -->
+            <div class="voice-controls" id="voice-controls" style="display: none;">
+                <div class="flex items-center justify-center space-x-4">
+                    <button id="start-voice" class="voice-button">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <div class="text-center">
+                        <div class="text-sm font-medium">Click to speak</div>
+                        <div class="text-xs opacity-75">Ask about strategy, team alignment, or KPIs</div>
+                    </div>
+                </div>
+                <div id="voice-status" class="text-center mt-2 text-sm"></div>
+            </div>
+            
+            <!-- Conversation -->
+            <div class="conversation-container" id="conversation-container">
+                <div class="message assistant">
+                    <strong>AI Assistant:</strong>
+                    <div class="mt-1">
+                        Hello {{ ceo_name }}! I'm here to help you guide your team and align with your vision. 
+                        You can ask me about:
+                    </div>
+                    <ul class="mt-2 ml-4 list-disc">
+                        <li>Team performance and KPIs</li>
+                        <li>Strategic decision support</li>
+                        <li>Escalation and delegation</li>
+                        <li>Vision alignment and communication</li>
+                        <li>Process optimization and workflows</li>
+                    </ul>
+                    <div class="mt-2 text-sm opacity-75">
+                        Try saying: "How is our Q4 performance tracking against goals?"
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Input Area -->
+            <div class="mt-4">
+                <div class="flex space-x-2">
+                    <input type="text" id="message-input" placeholder="Ask about strategy, team performance, or vision alignment..." 
+                           class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button onclick="sendMessage()" id="send-button" 
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                    <span class="text-xs text-gray-500">Press Enter to send or use voice mode</span>
+                    <span class="text-xs text-gray-500" id="response-time"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Vision Summary -->
+    <div class="lg:col-span-1">
+        <!-- KPI Overview -->
+        <div class="vision-section">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Strategic KPIs</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="kpi-card">
+                    <div class="text-2xl font-bold">{{ kpis.revenue_target|default('$0') }}</div>
+                    <div class="text-sm">Revenue Target</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="text-2xl font-bold">{{ kpis.team_size|default('0') }}</div>
+                    <div class="text-sm">Team Size</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="text-2xl font-bold">{{ kpis.projects_active|default('0') }}</div>
+                    <div class="text-sm">Active Projects</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="text-2xl font-bold">{{ kpis.satisfaction_score|default('0') }}%</div>
+                    <div class="text-sm">Team Satisfaction</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Leadership Structure -->
+        <div class="vision-section">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Leadership Team</h3>
+            <div class="space-y-3">
+                {% for role, person in leadership.items() %}
+                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div>
+                        <div class="font-medium">{{ role|title }}</div>
+                        <div class="text-sm text-gray-600">{{ person.name|default('Open') }}</div>
+                    </div>
+                    <span class="status-indicator status-on-track"></span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Strategic Goals -->
+        <div class="vision-section">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Strategic Goals</h3>
+            <div class="space-y-2">
+                {% for goal in strategic_goals %}
+                <div class="action-item">
+                    <div class="font-medium">{{ goal.title }}</div>
+                    <div class="text-sm text-gray-600">{{ goal.description }}</div>
+                    <div class="flex items-center mt-1">
+                        <span class="status-indicator status-{{ goal.status }}"></span>
+                        <span class="text-xs">{{ goal.progress }}% Complete</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="vision-section">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+            <div class="space-y-2">
+                <button onclick="quickAction('team_performance')" class="w-full text-left p-2 hover:bg-gray-50 rounded">
+                    📊 Review Team Performance
+                </button>
+                <button onclick="quickAction('strategic_update')" class="w-full text-left p-2 hover:bg-gray-50 rounded">
+                    🎯 Strategic Update Meeting
+                </button>
+                <button onclick="quickAction('escalation_review')" class="w-full text-left p-2 hover:bg-gray-50 rounded">
+                    ⚡ Review Escalations
+                </button>
+                <button onclick="quickAction('vision_alignment')" class="w-full text-left p-2 hover:bg-gray-50 rounded">
+                    🧭 Vision Alignment Check
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vision Details Tabs -->
+<div class="mt-6">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="border-b border-gray-200">
+            <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                <button onclick="showTab('leadership')" class="tab-button active py-4 px-1 border-b-2 border-blue-500 font-medium text-sm">
+                    Leadership Structure
+                </button>
+                <button onclick="showTab('strategy')" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm">
+                    Strategic Vision
+                </button>
+                <button onclick="showTab('processes')" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm">
+                    Processes & Workflows
+                </button>
+                <button onclick="showTab('culture')" class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm">
+                    Culture & Values
+                </button>
+            </nav>
+        </div>
+        
+        <div class="p-6">
+            <!-- Leadership Structure Tab -->
+            <div id="leadership-tab" class="tab-content">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Leadership Structure</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for role, details in leadership_structure.items() %}
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-900">{{ role|title }}</h4>
+                        <p class="text-sm text-gray-600 mt-1">{{ details.name|default('Position Open') }}</p>
+                        <p class="text-sm text-gray-500 mt-2">{{ details.responsibilities|default('Responsibilities to be defined') }}</p>
+                        <div class="mt-2">
+                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Reports to: {{ details.reports_to|default('CEO') }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Strategic Vision Tab -->
+            <div id="strategy-tab" class="tab-content" style="display: none;">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Strategic Vision</h3>
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Short-term Goals ({{ current_year }})</h4>
+                        <div class="space-y-2">
+                            {% for goal in short_term_goals %}
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                <div>
+                                    <div class="font-medium">{{ goal.title }}</div>
+                                    <div class="text-sm text-gray-600">{{ goal.description }}</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm font-medium">{{ goal.target }}</div>
+                                    <div class="text-xs text-gray-500">{{ goal.deadline }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Long-term Vision</h4>
+                        <div class="p-4 bg-blue-50 rounded-lg">
+                            <p class="text-gray-700">{{ long_term_vision|default('Long-term vision to be defined') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Processes Tab -->
+            <div id="processes-tab" class="tab-content" style="display: none;">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Processes & Workflows</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Escalation Paths</h4>
+                        <div class="space-y-2">
+                            {% for path in escalation_paths %}
+                            <div class="p-3 border border-gray-200 rounded">
+                                <div class="font-medium">{{ path.trigger }}</div>
+                                <div class="text-sm text-gray-600">→ {{ path.escalation_chain|join(' → ') }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Decision Matrices</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Decision Type</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Authority</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Threshold</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    {% for decision in decision_matrices %}
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ decision.type }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ decision.authority }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ decision.threshold }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Culture Tab -->
+            <div id="culture-tab" class="tab-content" style="display: none;">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Culture & Values</h3>
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Core Values</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for value in core_values %}
+                            <div class="p-4 border border-gray-200 rounded-lg">
+                                <div class="font-medium text-gray-900">{{ value.title }}</div>
+                                <div class="text-sm text-gray-600 mt-1">{{ value.description }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Operating Principles</h4>
+                        <div class="space-y-2">
+                            {% for principle in operating_principles %}
+                            <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded">
+                                <div class="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                <div>
+                                    <div class="font-medium">{{ principle.title }}</div>
+                                    <div class="text-sm text-gray-600">{{ principle.description }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let isRecording = false;
+let mediaRecorder = null;
+let audioChunks = [];
+
+// Voice toggle
+document.getElementById('voice-toggle').addEventListener('change', function(e) {
+    const voiceControls = document.getElementById('voice-controls');
+    voiceControls.style.display = e.target.checked ? 'block' : 'none';
+});
+
+// Voice recording
+document.getElementById('start-voice').addEventListener('click', function() {
+    if (!isRecording) {
+        startRecording();
+    } else {
+        stopRecording();
+    }
+});
+
+async function startRecording() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+        
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            await processVoiceInput(audioBlob);
+        };
+        
+        mediaRecorder.start();
+        isRecording = true;
+        
+        const button = document.getElementById('start-voice');
+        button.classList.add('recording');
+        button.innerHTML = '<i class="fas fa-stop"></i>';
+        
+        document.getElementById('voice-status').textContent = 'Recording... Click to stop';
+        
+    } catch (error) {
+        console.error('Error starting recording:', error);
+        alert('Error accessing microphone. Please check permissions.');
+    }
+}
+
+function stopRecording() {
+    if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        
+        isRecording = false;
+        
+        const button = document.getElementById('start-voice');
+        button.classList.remove('recording');
+        button.innerHTML = '<i class="fas fa-microphone"></i>';
+        
+        document.getElementById('voice-status').textContent = 'Processing...';
+    }
+}
+
+async function processVoiceInput(audioBlob) {
+    try {
+        // Convert audio to base64
+        const reader = new FileReader();
+        reader.onload = async function() {
+            const base64Audio = reader.result.split(',')[1];
+            
+            // Send to backend
+            const response = await fetch('/api/ceo/voice', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    audio_data: base64Audio,
+                    voice_output: document.getElementById('voice-toggle').checked
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                addMessage(result.transcription, 'ceo');
+                addMessage(result.response, 'assistant');
+                
+                // Play voice response if enabled
+                if (result.voice_output && result.voice_data) {
+                    playVoiceResponse(result.voice_data);
+                }
+            } else {
+                addMessage('Sorry, I couldn\'t process your voice input. Please try again.', 'assistant');
+            }
+            
+            document.getElementById('voice-status').textContent = 'Click to speak';
+        };
+        
+        reader.readAsDataURL(audioBlob);
+        
+    } catch (error) {
+        console.error('Error processing voice input:', error);
+        document.getElementById('voice-status').textContent = 'Error processing voice input';
+    }
+}
+
+function playVoiceResponse(voiceData) {
+    // Convert base64 to audio and play
+    const audio = new Audio('data:audio/wav;base64,' + voiceData);
+    audio.play();
+}
+
+// Text message handling
+function sendMessage() {
+    const input = document.getElementById('message-input');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    addMessage(message, 'ceo');
+    input.value = '';
+    
+    // Send to backend
+    fetch('/api/ceo/conversation', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            message: message,
+            voice_output: document.getElementById('voice-toggle').checked
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            addMessage(data.response, 'assistant');
+            
+            if (data.voice_output && data.voice_data) {
+                playVoiceResponse(data.voice_data);
+            }
+        } else {
+            addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+    });
+}
+
+function addMessage(content, sender) {
+    const container = document.getElementById('conversation-container');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
+    
+    const timestamp = new Date().toLocaleTimeString();
+    messageDiv.innerHTML = `
+        <div class="flex justify-between items-start">
+            <div class="flex-1">
+                <strong>${sender === 'ceo' ? 'You' : 'AI Assistant'}:</strong>
+                <div class="mt-1">${content}</div>
+            </div>
+            <div class="text-xs text-gray-500 ml-2">${timestamp}</div>
+        </div>
+    `;
+    
+    container.appendChild(messageDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+// Quick actions
+function quickAction(action) {
+    const actions = {
+        'team_performance': 'Show me our current team performance metrics and any areas that need attention.',
+        'strategic_update': 'Prepare a strategic update for our next leadership meeting.',
+        'escalation_review': 'Review any pending escalations and their current status.',
+        'vision_alignment': 'Check how well our current activities align with our strategic vision.'
+    };
+    
+    const message = actions[action];
+    if (message) {
+        document.getElementById('message-input').value = message;
+        sendMessage();
+    }
+}
+
+// Tab switching
+function showTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.style.display = 'none';
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('border-blue-500');
+        button.classList.add('border-transparent');
+    });
+    
+    // Show selected tab content
+    document.getElementById(tabName + '-tab').style.display = 'block';
+    
+    // Add active class to selected tab button
+    event.target.classList.remove('border-transparent');
+    event.target.classList.add('border-blue-500');
+}
+
+// Enter key handling
+document.getElementById('message-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+</script>
+{% endblock %} 

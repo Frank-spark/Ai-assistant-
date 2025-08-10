@@ -18,9 +18,15 @@ from .jobs.queue import init_celery, close_celery
 from .integrations.webhooks import slack_router, gmail_router, asana_router
 from .workflows.router import workflow_router
 from .ai.chain import init_ai_chain
+from .ai.model_switcher import init_model_switcher
+from .ai.ceo_vision_chain import init_ceo_vision_chain
 from .kb.retriever import init_kb_retriever
+from .kb.enhanced_retriever import init_enhanced_kb_retriever
+from .analytics.telemetry import init_telemetry_service
+from .integrations.hooks import init_hook_manager
 from .web.dashboard import router as dashboard_router
 from .web.landing import router as landing_router
+from .web.ceo_vision import router as ceo_vision_router
 from .saas.auth import router as auth_router
 
 # Setup logging
@@ -30,12 +36,17 @@ logger = logging.getLogger(__name__)
 # Global state
 ai_chain = None
 kb_retriever = None
+enhanced_kb_retriever = None
+model_switcher = None
+ceo_vision_chain = None
+telemetry_service = None
+hook_manager = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
-    global ai_chain, kb_retriever
+    global ai_chain, kb_retriever, enhanced_kb_retriever, model_switcher, ceo_vision_chain, telemetry_service, hook_manager
     
     # Startup
     logger.info("Starting Reflex Executive Assistant...")
@@ -49,13 +60,33 @@ async def lifespan(app: FastAPI):
         init_celery()
         logger.info("Celery initialized successfully")
         
-        # Initialize knowledge base retriever
+        # Initialize enhanced knowledge base retriever
+        enhanced_kb_retriever = await init_enhanced_kb_retriever()
+        logger.info("Enhanced knowledge base retriever initialized successfully")
+        
+        # Initialize knowledge base retriever (legacy)
         kb_retriever = init_kb_retriever()
         logger.info("Knowledge base retriever initialized successfully")
         
+        # Initialize model switcher
+        model_switcher = await init_model_switcher()
+        logger.info("Model switcher initialized successfully")
+        
+        # Initialize CEO vision chain
+        ceo_vision_chain = await init_ceo_vision_chain()
+        logger.info("CEO vision chain initialized successfully")
+        
         # Initialize AI chain
-        ai_chain = init_ai_chain(kb_retriever)
+        ai_chain = init_ai_chain(enhanced_kb_retriever)
         logger.info("AI chain initialized successfully")
+        
+        # Initialize telemetry service
+        telemetry_service = await init_telemetry_service()
+        logger.info("Telemetry service initialized successfully")
+        
+        # Initialize hook manager
+        hook_manager = await init_hook_manager()
+        logger.info("Integration hook manager initialized successfully")
         
         logger.info("Reflex Executive Assistant started successfully")
         
@@ -136,7 +167,14 @@ def create_app() -> FastAPI:
         return {
             "status": "healthy",
             "service": "reflex-executive-assistant",
-            "version": "0.1.0"
+            "version": "0.1.0",
+            "features": {
+                "enhanced_kb": enhanced_kb_retriever is not None,
+                "model_switcher": model_switcher is not None,
+                "ceo_vision": ceo_vision_chain is not None,
+                "telemetry": telemetry_service is not None,
+                "hooks": hook_manager is not None
+            }
         }
     
     @app.get("/healthz")
@@ -145,7 +183,17 @@ def create_app() -> FastAPI:
         return {
             "status": "healthy",
             "service": "reflex-executive-assistant",
-            "version": "0.1.0"
+            "version": "0.1.0",
+            "components": {
+                "database": "connected",
+                "redis": "connected",
+                "ai_chain": ai_chain is not None,
+                "enhanced_kb": enhanced_kb_retriever is not None,
+                "model_switcher": model_switcher is not None,
+                "ceo_vision_chain": ceo_vision_chain is not None,
+                "telemetry": telemetry_service is not None,
+                "hooks": hook_manager is not None
+            }
         }
     
     # Include routers
@@ -158,6 +206,7 @@ def create_app() -> FastAPI:
     app.include_router(landing_router, tags=["landing"])
     app.include_router(auth_router, tags=["authentication"])
     app.include_router(dashboard_router, tags=["dashboard"])
+    app.include_router(ceo_vision_router, tags=["ceo-vision"])
     
     return app
 
