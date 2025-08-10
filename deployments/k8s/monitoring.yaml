@@ -1,0 +1,582 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reflex-executive-assistant
+      component: prometheus
+  template:
+    metadata:
+      labels:
+        app: reflex-executive-assistant
+        component: prometheus
+    spec:
+      containers:
+      - name: prometheus
+        image: prom/prometheus:v2.45.0
+        ports:
+        - containerPort: 9090
+          name: prometheus
+        args:
+        - --config.file=/etc/prometheus/prometheus.yml
+        - --storage.tsdb.path=/prometheus
+        - --storage.tsdb.retention.time=30d
+        - --web.console.libraries=/etc/prometheus/console_libraries
+        - --web.console.templates=/etc/prometheus/consoles
+        - --web.enable-lifecycle
+        volumeMounts:
+        - name: prometheus-config
+          mountPath: /etc/prometheus
+        - name: prometheus-storage
+          mountPath: /prometheus
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9090
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9090
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      volumes:
+      - name: prometheus-config
+        configMap:
+          name: prometheus-config
+      - name: prometheus-storage
+        persistentVolumeClaim:
+          claimName: prometheus-storage-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: prometheus
+spec:
+  ports:
+  - port: 9090
+    targetPort: 9090
+    protocol: TCP
+    name: prometheus
+  selector:
+    app: reflex-executive-assistant
+    component: prometheus
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: prometheus
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+    
+    rule_files:
+      - "alert_rules.yml"
+    
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+              - alertmanager:9093
+    
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+      
+      - job_name: 'reflex-executive-app'
+        static_configs:
+          - targets: ['reflex-executive-app:9090']
+        metrics_path: /metrics
+        scrape_interval: 30s
+        scrape_timeout: 10s
+        honor_labels: true
+        scheme: http
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_service_name]
+            action: replace
+            target_label: service
+      
+      - job_name: 'postgres-db'
+        static_configs:
+          - targets: ['postgres-db:5432']
+        metrics_path: /metrics
+        scrape_interval: 60s
+        scrape_timeout: 10s
+        honor_labels: true
+        scheme: http
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+      
+      - job_name: 'redis-cache'
+        static_configs:
+          - targets: ['redis-cache:6379']
+        metrics_path: /metrics
+        scrape_interval: 60s
+        scrape_timeout: 10s
+        honor_labels: true
+        scheme: http
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+      
+      - job_name: 'celery-workers'
+        static_configs:
+          - targets: ['reflex-executive-celery:9090']
+        metrics_path: /metrics
+        scrape_interval: 30s
+        scrape_timeout: 10s
+        honor_labels: true
+        scheme: http
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_service_name]
+            action: replace
+            target_label: service
+  
+  alert_rules.yml: |
+    groups:
+      - name: reflex-executive-alerts
+        rules:
+          - alert: HighCPUUsage
+            expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High CPU usage detected"
+              description: "CPU usage is above 80% for more than 5 minutes"
+          
+          - alert: HighMemoryUsage
+            expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High memory usage detected"
+              description: "Memory usage is above 85% for more than 5 minutes"
+          
+          - alert: HighDiskUsage
+            expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes * 100 > 85
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High disk usage detected"
+              description: "Disk usage is above 85% for more than 5 minutes"
+          
+          - alert: AppDown
+            expr: up{job="reflex-executive-app"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Reflex Executive App is down"
+              description: "The main application is not responding"
+          
+          - alert: DatabaseDown
+            expr: up{job="postgres-db"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Database is down"
+              description: "PostgreSQL database is not responding"
+          
+          - alert: RedisDown
+            expr: up{job="redis-cache"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Redis cache is down"
+              description: "Redis cache is not responding"
+          
+          - alert: HighErrorRate
+            expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) * 100 > 5
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High error rate detected"
+              description: "Error rate is above 5% for more than 5 minutes"
+          
+          - alert: HighResponseTime
+            expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High response time detected"
+              description: "95th percentile response time is above 2 seconds"
+          
+          - alert: CeleryWorkerDown
+            expr: up{job="celery-workers"} == 0
+            for: 1m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Celery worker is down"
+              description: "One or more Celery workers are not responding"
+          
+          - alert: HighQueueSize
+            expr: celery_queue_length > 1000
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High queue size detected"
+              description: "Celery queue has more than 1000 pending tasks"
+          
+          - alert: DatabaseConnections
+            expr: pg_stat_database_numbackends > 80
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High database connections"
+              description: "Database has more than 80 active connections"
+          
+          - alert: RedisMemoryUsage
+            expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 80
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High Redis memory usage"
+              description: "Redis memory usage is above 80%"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reflex-executive-assistant
+      component: grafana
+  template:
+    metadata:
+      labels:
+        app: reflex-executive-assistant
+        component: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: grafana/grafana:10.0.0
+        ports:
+        - containerPort: 3000
+          name: grafana
+        env:
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: GRAFANA_PASSWORD
+        - name: GF_INSTALL_PLUGINS
+          value: "grafana-piechart-panel,grafana-worldmap-panel"
+        volumeMounts:
+        - name: grafana-storage
+          mountPath: /var/lib/grafana
+        - name: grafana-datasources
+          mountPath: /etc/grafana/provisioning/datasources
+        - name: grafana-dashboards
+          mountPath: /etc/grafana/provisioning/dashboards
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      volumes:
+      - name: grafana-storage
+        persistentVolumeClaim:
+          claimName: grafana-storage-pvc
+      - name: grafana-datasources
+        configMap:
+          name: grafana-datasources
+      - name: grafana-dashboards
+        configMap:
+          name: grafana-dashboards
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: grafana
+spec:
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+    name: grafana
+  selector:
+    app: reflex-executive-assistant
+    component: grafana
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: grafana
+data:
+  datasources.yml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus:9090
+        isDefault: true
+        editable: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: grafana
+data:
+  dashboards.yml: |
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 10
+        allowUiUpdates: true
+        options:
+          path: /etc/grafana/provisioning/dashboards
+  
+  reflex-executive-overview.json: |
+    {
+      "dashboard": {
+        "id": null,
+        "title": "Reflex Executive Assistant Overview",
+        "tags": ["reflex", "executive", "assistant"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "Application Health",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "up{job=\"reflex-executive-app\"}",
+                "legendFormat": "{{pod}}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "thresholds": {
+                  "steps": [
+                    {"color": "red", "value": 0},
+                    {"color": "green", "value": 1}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 2,
+            "title": "HTTP Request Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total[5m])",
+                "legendFormat": "{{method}} {{status}}"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "title": "Response Time",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+                "legendFormat": "95th percentile"
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "title": "Error Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{status=~\"5..\"}[5m])",
+                "legendFormat": "5xx errors"
+              }
+            ]
+          },
+          {
+            "id": 5,
+            "title": "Database Connections",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "pg_stat_database_numbackends",
+                "legendFormat": "{{datname}}"
+              }
+            ]
+          },
+          {
+            "id": 6,
+            "title": "Redis Memory Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "redis_memory_used_bytes / redis_memory_max_bytes * 100",
+                "legendFormat": "Memory usage %"
+              }
+            ]
+          },
+          {
+            "id": 7,
+            "title": "Celery Queue Length",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "celery_queue_length",
+                "legendFormat": "{{queue}}"
+              }
+            ]
+          },
+          {
+            "id": 8,
+            "title": "Active Celery Workers",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "up{job=\"celery-workers\"}",
+                "legendFormat": "{{pod}}"
+              }
+            ]
+          }
+        ],
+        "time": {
+          "from": "now-1h",
+          "to": "now"
+        },
+        "refresh": "30s"
+      }
+    }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-storage-pvc
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: prometheus
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-storage-pvc
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: grafana
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 5Gi 

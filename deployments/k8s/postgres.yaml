@@ -1,0 +1,274 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-db
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: database
+spec:
+  serviceName: postgres-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reflex-executive-assistant
+      component: database
+  template:
+    metadata:
+      labels:
+        app: reflex-executive-assistant
+        component: database
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_DB
+          value: "reflex"
+        - name: POSTGRES_USER
+          value: "reflex_user"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: POSTGRES_URL
+        - name: PGDATA
+          value: "/var/lib/postgresql/data/pgdata"
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        - name: postgres-config
+          mountPath: /etc/postgresql/postgresql.conf
+          subPath: postgresql.conf
+        - name: postgres-init
+          mountPath: /docker-entrypoint-initdb.d
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - reflex_user
+            - -d
+            - reflex
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - reflex_user
+            - -d
+            - reflex
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      volumes:
+      - name: postgres-config
+        configMap:
+          name: postgres-config
+      - name: postgres-init
+        configMap:
+          name: postgres-init
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: "fast-ssd"
+      resources:
+        requests:
+          storage: 20Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-db
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: database
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: postgres
+  selector:
+    app: reflex-executive-assistant
+    component: database
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: database
+data:
+  postgresql.conf: |
+    # Connection Settings
+    listen_addresses = '*'
+    port = 5432
+    max_connections = 200
+    
+    # Memory Settings
+    shared_buffers = 256MB
+    effective_cache_size = 1GB
+    maintenance_work_mem = 64MB
+    checkpoint_completion_target = 0.9
+    wal_buffers = 16MB
+    default_statistics_target = 100
+    
+    # Write-Ahead Logging
+    wal_level = replica
+    max_wal_size = 1GB
+    min_wal_size = 80MB
+    
+    # Query Planner
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    
+    # Logging
+    log_destination = 'stderr'
+    logging_collector = on
+    log_directory = 'log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_rotation_age = 1d
+    log_rotation_size = 100MB
+    log_min_duration_statement = 1000
+    log_checkpoints = on
+    log_connections = on
+    log_disconnections = on
+    log_lock_waits = on
+    log_temp_files = 0
+    log_autovacuum_min_duration = 0
+    log_error_verbosity = verbose
+    
+    # Autovacuum
+    autovacuum = on
+    autovacuum_max_workers = 3
+    autovacuum_naptime = 1min
+    autovacuum_vacuum_threshold = 50
+    autovacuum_analyze_threshold = 50
+    autovacuum_vacuum_scale_factor = 0.2
+    autovacuum_analyze_scale_factor = 0.1
+    
+    # Replication
+    max_replication_slots = 10
+    max_wal_senders = 10
+    
+    # Security
+    ssl = off
+    password_encryption = scram-sha-256
+    
+    # Performance
+    synchronous_commit = off
+    fsync = on
+    full_page_writes = on
+    
+    # Extensions
+    shared_preload_libraries = 'pg_stat_statements'
+    
+    # Statistics
+    track_activities = on
+    track_counts = on
+    track_io_timing = on
+    track_functions = all
+    track_activity_query_size = 1024
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: database
+data:
+  01-init.sql: |
+    -- Create extensions
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
+    CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+    CREATE EXTENSION IF NOT EXISTS "btree_gin";
+    CREATE EXTENSION IF NOT EXISTS "btree_gist";
+    
+    -- Create additional databases
+    CREATE DATABASE reflex_test;
+    CREATE DATABASE reflex_backup;
+    
+    -- Grant permissions
+    GRANT ALL PRIVILEGES ON DATABASE reflex TO reflex_user;
+    GRANT ALL PRIVILEGES ON DATABASE reflex_test TO reflex_user;
+    GRANT ALL PRIVILEGES ON DATABASE reflex_backup TO reflex_user;
+    
+    -- Create monitoring user
+    CREATE USER reflex_monitor WITH PASSWORD 'monitor_password';
+    GRANT CONNECT ON DATABASE reflex TO reflex_monitor;
+    GRANT USAGE ON SCHEMA public TO reflex_monitor;
+    GRANT SELECT ON ALL TABLES IN SCHEMA public TO reflex_monitor;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO reflex_monitor;
+    
+    -- Create backup user
+    CREATE USER reflex_backup WITH PASSWORD 'backup_password';
+    GRANT CONNECT ON DATABASE reflex TO reflex_backup;
+    GRANT CONNECT ON DATABASE reflex_backup TO reflex_backup;
+    
+    -- Set up monitoring
+    ALTER USER reflex_monitor SET log_statement = 'all';
+    ALTER USER reflex_monitor SET log_min_duration_statement = 0;
+    
+    -- Create helper functions
+    CREATE OR REPLACE FUNCTION get_table_size(table_name text)
+    RETURNS text AS $$
+    DECLARE
+        size text;
+    BEGIN
+        SELECT pg_size_pretty(pg_total_relation_size(table_name::regclass)) INTO size;
+        RETURN size;
+    END;
+    $$ LANGUAGE plpgsql;
+    
+    CREATE OR REPLACE FUNCTION get_database_size()
+    RETURNS text AS $$
+    DECLARE
+        size text;
+    BEGIN
+        SELECT pg_size_pretty(pg_database_size(current_database())) INTO size;
+        RETURN size;
+    END;
+    $$ LANGUAGE plpgsql;
+    
+    -- Create indexes for better performance
+    CREATE INDEX IF NOT EXISTS idx_conversations_user_id ON conversations(user_id);
+    CREATE INDEX IF NOT EXISTS idx_conversations_platform ON conversations(platform);
+    CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
+    CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
+    CREATE INDEX IF NOT EXISTS idx_workflow_executions_status ON workflow_executions(status);
+    CREATE INDEX IF NOT EXISTS idx_workflow_executions_created_at ON workflow_executions(created_at);
+    
+    -- Create partitions for large tables (if needed)
+    -- This would be implemented based on actual usage patterns
+    
+    -- Set up archiving
+    ALTER SYSTEM SET archive_mode = on;
+    ALTER SYSTEM SET archive_command = 'test ! -f /var/lib/postgresql/archive/%f && cp %p /var/lib/postgresql/archive/%f';
+    
+    -- Reload configuration
+    SELECT pg_reload_conf(); 

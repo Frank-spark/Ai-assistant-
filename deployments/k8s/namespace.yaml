@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: reflex-executive
+  labels:
+    name: reflex-executive
+    app: reflex-executive-assistant
+    environment: production
+  annotations:
+    description: "Namespace for Reflex Executive AI Assistant"
+    owner: "sparkroboticai@gmail.com"
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: reflex-executive-quota
+  namespace: reflex-executive
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    persistentvolumeclaims: "5"
+    services: "10"
+    secrets: "20"
+    configmaps: "20"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: reflex-executive-limits
+  namespace: reflex-executive
+spec:
+  limits:
+  - default:
+      cpu: 500m
+      memory: 1Gi
+    defaultRequest:
+      cpu: 250m
+      memory: 512Mi
+    type: Container
+  - default:
+      cpu: 1000m
+      memory: 2Gi
+    defaultRequest:
+      cpu: 500m
+      memory: 1Gi
+    type: Pod 

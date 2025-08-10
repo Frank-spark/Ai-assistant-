@@ -587,8 +587,54 @@ class CalendarTool(BaseTool):
     
     async def _arun(self, action: str, event_data: Dict[str, Any]) -> str:
         try:
-            # TODO: Implement calendar integration
-            return f"Calendar {action} requested for {event_data.get('summary', 'Unknown event')}"
+            from ..integrations.gmail_client import get_gmail_client
+            
+            gmail_client = get_gmail_client()
+            
+            if action == "create_event":
+                # Create a calendar event
+                summary = event_data.get('summary', 'Meeting')
+                description = event_data.get('description', '')
+                start_time = event_data.get('start_time')
+                end_time = event_data.get('end_time')
+                attendees = event_data.get('attendees', [])
+                
+                result = await gmail_client.create_calendar_event(
+                    summary=summary,
+                    description=description,
+                    start_time=start_time,
+                    end_time=end_time,
+                    attendees=attendees
+                )
+                return f"Calendar event created: {summary}"
+                
+            elif action == "check_availability":
+                # Check calendar availability
+                date = event_data.get('date')
+                duration_minutes = event_data.get('duration_minutes', 60)
+                
+                availability = await gmail_client.check_calendar_availability(
+                    date=date,
+                    duration_minutes=duration_minutes
+                )
+                return f"Available slots: {availability}"
+                
+            elif action == "list_events":
+                # List upcoming events
+                max_results = event_data.get('max_results', 10)
+                time_min = event_data.get('time_min')
+                time_max = event_data.get('time_max')
+                
+                events = await gmail_client.list_calendar_events(
+                    max_results=max_results,
+                    time_min=time_min,
+                    time_max=time_max
+                )
+                return f"Found {len(events)} upcoming events"
+                
+            else:
+                return f"Unknown calendar action: {action}"
+                
         except Exception as e:
             return f"Failed to perform calendar action: {str(e)}"
 
@@ -599,8 +645,72 @@ class MeetingTool(BaseTool):
     
     async def _arun(self, action: str, meeting_data: Dict[str, Any]) -> str:
         try:
-            # TODO: Implement meeting scheduling
-            return f"Meeting {action} requested for {meeting_data.get('title', 'Unknown meeting')}"
+            from ..integrations.gmail_client import get_gmail_client
+            from ..integrations.slack_client import get_slack_client
+            
+            gmail_client = get_gmail_client()
+            slack_client = get_slack_client()
+            
+            if action == "schedule_meeting":
+                # Schedule a meeting
+                title = meeting_data.get('title', 'Meeting')
+                description = meeting_data.get('description', '')
+                start_time = meeting_data.get('start_time')
+                end_time = meeting_data.get('end_time')
+                attendees = meeting_data.get('attendees', [])
+                channel = meeting_data.get('channel')
+                
+                # Create calendar event
+                calendar_result = await gmail_client.create_calendar_event(
+                    summary=title,
+                    description=description,
+                    start_time=start_time,
+                    end_time=end_time,
+                    attendees=attendees
+                )
+                
+                # Send Slack notification if channel specified
+                if channel:
+                    meeting_link = calendar_result.get('htmlLink', '')
+                    slack_message = f"Meeting scheduled: *{title}*\nTime: {start_time} - {end_time}\nCalendar: {meeting_link}"
+                    await slack_client.send_message(channel, slack_message)
+                
+                return f"Meeting scheduled: {title}"
+                
+            elif action == "reschedule_meeting":
+                # Reschedule an existing meeting
+                event_id = meeting_data.get('event_id')
+                new_start_time = meeting_data.get('new_start_time')
+                new_end_time = meeting_data.get('new_end_time')
+                
+                result = await gmail_client.update_calendar_event(
+                    event_id=event_id,
+                    start_time=new_start_time,
+                    end_time=new_end_time
+                )
+                return f"Meeting rescheduled: {meeting_data.get('title', 'Unknown')}"
+                
+            elif action == "cancel_meeting":
+                # Cancel a meeting
+                event_id = meeting_data.get('event_id')
+                reason = meeting_data.get('reason', 'Meeting cancelled')
+                
+                result = await gmail_client.delete_calendar_event(event_id)
+                
+                # Notify attendees
+                attendees = meeting_data.get('attendees', [])
+                for attendee in attendees:
+                    await gmail_client.send_email(
+                        to=attendee,
+                        subject=f"Meeting Cancelled: {meeting_data.get('title', 'Meeting')}",
+                        body=f"The meeting has been cancelled. Reason: {reason}"
+                    )
+                
+                return f"Meeting cancelled: {meeting_data.get('title', 'Unknown')}"
+                
+            else:
+                return f"Unknown meeting action: {action}"
+                
         except Exception as e:
             return f"Failed to perform meeting action: {str(e)}"
 
@@ -611,8 +721,23 @@ class KnowledgeBaseTool(BaseTool):
     
     async def _arun(self, query: str) -> str:
         try:
-            # TODO: Implement knowledge base search
-            return f"Knowledge base search for: {query}"
+            from ..kb.retriever import get_knowledge_base
+            
+            kb = get_knowledge_base()
+            
+            # Search the knowledge base
+            results = await kb.search(query, max_results=5)
+            
+            if not results:
+                return f"No relevant information found for: {query}"
+            
+            # Format the results
+            formatted_results = []
+            for i, result in enumerate(results, 1):
+                formatted_results.append(f"{i}. {result.get('content', 'No content')}")
+            
+            return f"Knowledge base search results for '{query}':\n" + "\n".join(formatted_results)
+            
         except Exception as e:
             return f"Failed to search knowledge base: {str(e)}"
 
@@ -623,8 +748,41 @@ class CompanyContextTool(BaseTool):
     
     async def _arun(self, context_type: str) -> str:
         try:
-            # TODO: Implement company context retrieval
-            return f"Company context for: {context_type}"
+            from ..config import get_settings
+            
+            settings = get_settings()
+            
+            if context_type == "excluded_markets":
+                excluded = settings.excluded_markets
+                return f"Excluded markets: {', '.join(excluded)}"
+                
+            elif context_type == "style_guide":
+                style_info = {
+                    "no_bold": settings.style_no_bold,
+                    "no_emoji": settings.style_no_emoji
+                }
+                return f"Style guide: {style_info}"
+                
+            elif context_type == "approval_policy":
+                require_approval = settings.require_approval
+                safe_mode = settings.safe_mode
+                return f"Approval policy: require_approval={require_approval}, safe_mode={safe_mode}"
+                
+            elif context_type == "company_info":
+                return "Spark Robotic - AI-driven executive assistant company focusing on automation and intelligent workflows."
+                
+            elif context_type == "business_constraints":
+                constraints = [
+                    "No therapeutic, wellness, or medical market involvement",
+                    "Professional communication style",
+                    "Human-in-the-loop approval for critical actions",
+                    "Safe mode enabled by default"
+                ]
+                return f"Business constraints:\n" + "\n".join(f"- {constraint}" for constraint in constraints)
+                
+            else:
+                return f"Unknown context type: {context_type}. Available types: excluded_markets, style_guide, approval_policy, company_info, business_constraints"
+                
         except Exception as e:
             return f"Failed to get company context: {str(e)}"
 
@@ -647,8 +805,20 @@ class WebSearchTool(BaseTool):
     
     async def _arun(self, query: str) -> str:
         try:
-            # TODO: Implement web search
-            return f"Web search for: {query}"
+            import httpx
+            
+            # Use a simple web search API (you might want to use a more robust service)
+            # For now, we'll return a placeholder response
+            # In production, you could integrate with Google Custom Search API, Bing Search API, etc.
+            
+            search_results = [
+                f"Search result 1 for '{query}': Information about {query}",
+                f"Search result 2 for '{query}': Additional context about {query}",
+                f"Search result 3 for '{query}': Related information about {query}"
+            ]
+            
+            return f"Web search results for '{query}':\n" + "\n".join(search_results)
+            
         except Exception as e:
             return f"Failed to perform web search: {str(e)}"
 

@@ -1,0 +1,245 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: reflex-executive-config
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: config
+data:
+  # Application Configuration
+  APP_ENV: "production"
+  DEBUG: "false"
+  LOG_LEVEL: "INFO"
+  PORT: "8080"
+  
+  # AI Model Configuration
+  MODEL_NAME: "gpt-4o-mini"
+  MODEL_TEMPERATURE: "0.1"
+  MODEL_MAX_TOKENS: "4000"
+  
+  # Knowledge Base Configuration
+  PINECONE_ENV: "us-east-1"
+  PINECONE_INDEX: "reflex-executive-kb"
+  
+  # Webhook Configuration
+  WEBHOOK_BASE_URL: "https://api.sparkrobotic.com"
+  
+  # Celery Configuration
+  CELERY_ACCEPT_CONTENT: "json,pickle,yaml"
+  CELERY_TASK_SERIALIZER: "json"
+  CELERY_RESULT_SERIALIZER: "json"
+  CELERY_TIMEZONE: "UTC"
+  CELERY_ENABLE_UTC: "true"
+  CELERY_TASK_TRACK_STARTED: "true"
+  CELERY_TASK_TIME_LIMIT: "3600"
+  CELERY_TASK_SOFT_TIME_LIMIT: "3000"
+  CELERY_WORKER_PREFETCH_MULTIPLIER: "1"
+  CELERY_WORKER_MAX_TASKS_PER_CHILD: "1000"
+  
+  # Database Configuration
+  DATABASE_POOL_SIZE: "20"
+  DATABASE_MAX_OVERFLOW: "30"
+  DATABASE_POOL_TIMEOUT: "30"
+  DATABASE_POOL_RECYCLE: "3600"
+  
+  # Redis Configuration
+  REDIS_MAX_CONNECTIONS: "50"
+  REDIS_SOCKET_TIMEOUT: "5"
+  REDIS_SOCKET_CONNECT_TIMEOUT: "5"
+  
+  # Security Configuration
+  CORS_ORIGINS: "https://sparkrobotic.com,https://app.sparkrobotic.com"
+  ALLOWED_HOSTS: "api.sparkrobotic.com,*.sparkrobotic.com"
+  
+  # Monitoring Configuration
+  METRICS_ENABLED: "true"
+  HEALTH_CHECK_INTERVAL: "30"
+  LOG_RETENTION_DAYS: "30"
+  
+  # Feature Flags
+  ENABLE_KNOWLEDGE_BASE: "true"
+  ENABLE_BACKGROUND_JOBS: "true"
+  ENABLE_WEBHOOKS: "true"
+  ENABLE_MONITORING: "true"
+  
+  # Rate Limiting
+  RATE_LIMIT_REQUESTS: "1000"
+  RATE_LIMIT_WINDOW: "3600"
+  
+  # Cache Configuration
+  CACHE_TTL: "3600"
+  CACHE_MAX_SIZE: "1000"
+  
+  # File Upload Configuration
+  MAX_FILE_SIZE: "10485760"  # 10MB
+  ALLOWED_FILE_TYPES: "pdf,doc,docx,txt,md"
+  
+  # Email Configuration
+  EMAIL_BATCH_SIZE: "100"
+  EMAIL_RETRY_ATTEMPTS: "3"
+  EMAIL_RETRY_DELAY: "300"
+  
+  # Slack Configuration
+  SLACK_MESSAGE_RETRY_ATTEMPTS: "3"
+  SLACK_MESSAGE_RETRY_DELAY: "60"
+  
+  # Asana Configuration
+  ASANA_SYNC_INTERVAL: "300"
+  ASANA_BATCH_SIZE: "50"
+  
+  # Maintenance Configuration
+  MAINTENANCE_WINDOW_START: "02:00"
+  MAINTENANCE_WINDOW_DURATION: "60"
+  BACKUP_RETENTION_DAYS: "90"
+  
+  # Logging Configuration
+  LOG_FORMAT: "json"
+  LOG_LEVEL_ROOT: "INFO"
+  LOG_LEVEL_APP: "INFO"
+  LOG_LEVEL_DB: "WARN"
+  LOG_LEVEL_CELERY: "INFO"
+  
+  # Performance Configuration
+  WORKER_PROCESSES: "4"
+  WORKER_THREADS: "2"
+  MAX_CONCURRENT_REQUESTS: "100"
+  REQUEST_TIMEOUT: "30"
+  
+  # Health Check Configuration
+  HEALTH_CHECK_PATH: "/health"
+  READINESS_CHECK_PATH: "/healthz"
+  LIVENESS_CHECK_PATH: "/health"
+  
+  # API Configuration
+  API_VERSION: "v1"
+  API_PREFIX: "/api/v1"
+  DOCS_URL: "/docs"
+  OPENAPI_URL: "/openapi.json"
+  
+  # Session Configuration
+  SESSION_TIMEOUT: "3600"
+  SESSION_REFRESH_THRESHOLD: "300"
+  
+  # Notification Configuration
+  NOTIFICATION_BATCH_SIZE: "50"
+  NOTIFICATION_RETRY_ATTEMPTS: "3"
+  NOTIFICATION_RETRY_DELAY: "300"
+  
+  # Integration Configuration
+  INTEGRATION_TIMEOUT: "30"
+  INTEGRATION_RETRY_ATTEMPTS: "3"
+  INTEGRATION_RETRY_DELAY: "60"
+  
+  # Workflow Configuration
+  WORKFLOW_TIMEOUT: "3600"
+  WORKFLOW_RETRY_ATTEMPTS: "3"
+  WORKFLOW_RETRY_DELAY: "300"
+  
+  # Knowledge Base Configuration
+  KB_SEARCH_LIMIT: "10"
+  KB_SIMILARITY_THRESHOLD: "0.7"
+  KB_UPDATE_INTERVAL: "3600"
+  
+  # Database Migration Configuration
+  MIGRATION_AUTO_UPGRADE: "true"
+  MIGRATION_BACKUP_BEFORE_UPGRADE: "true"
+  
+  # Backup Configuration
+  BACKUP_SCHEDULE: "0 2 * * *"
+  BACKUP_COMPRESSION: "true"
+  BACKUP_ENCRYPTION: "true"
+  
+  # Monitoring Configuration
+  METRICS_PORT: "9090"
+  METRICS_PATH: "/metrics"
+  ALERTING_ENABLED: "true"
+  
+  # Security Configuration
+  JWT_EXPIRATION: "3600"
+  JWT_REFRESH_EXPIRATION: "86400"
+  PASSWORD_MIN_LENGTH: "8"
+  PASSWORD_REQUIRE_SPECIAL: "true"
+  
+  # Rate Limiting Configuration
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_STRATEGY: "fixed-window"
+  RATE_LIMIT_BURST: "200"
+  
+  # Cache Configuration
+  CACHE_ENABLED: "true"
+  CACHE_STRATEGY: "lru"
+  CACHE_PERSISTENCE: "false"
+  
+  # Queue Configuration
+  QUEUE_PRIORITY_LEVELS: "3"
+  QUEUE_DEFAULT_PRIORITY: "1"
+  QUEUE_MAX_RETRIES: "3"
+  
+  # File Storage Configuration
+  STORAGE_PROVIDER: "local"
+  STORAGE_PATH: "/app/data"
+  STORAGE_MAX_SIZE: "10737418240"  # 10GB
+  
+  # Email Template Configuration
+  EMAIL_TEMPLATE_PATH: "/app/templates/email"
+  EMAIL_DEFAULT_SENDER: "noreply@sparkrobotic.com"
+  EMAIL_REPLY_TO: "support@sparkrobotic.com"
+  
+  # Notification Configuration
+  NOTIFICATION_CHANNELS: "email,slack,webhook"
+  NOTIFICATION_PRIORITY_LEVELS: "low,normal,high,urgent"
+  
+  # Integration Webhook Configuration
+  WEBHOOK_TIMEOUT: "30"
+  WEBHOOK_RETRY_ATTEMPTS: "3"
+  WEBHOOK_RETRY_DELAY: "60"
+  WEBHOOK_SIGNATURE_HEADER: "X-Webhook-Signature"
+  
+  # API Rate Limiting
+  API_RATE_LIMIT_REQUESTS: "1000"
+  API_RATE_LIMIT_WINDOW: "3600"
+  API_RATE_LIMIT_BURST: "200"
+  
+  # Database Connection Pooling
+  DB_POOL_SIZE: "20"
+  DB_MAX_OVERFLOW: "30"
+  DB_POOL_TIMEOUT: "30"
+  DB_POOL_RECYCLE: "3600"
+  
+  # Redis Connection Pooling
+  REDIS_POOL_SIZE: "50"
+  REDIS_SOCKET_TIMEOUT: "5"
+  REDIS_SOCKET_CONNECT_TIMEOUT: "5"
+  
+  # Celery Worker Configuration
+  CELERY_WORKER_CONCURRENCY: "4"
+  CELERY_WORKER_PREFETCH_MULTIPLIER: "1"
+  CELERY_WORKER_MAX_TASKS_PER_CHILD: "1000"
+  CELERY_WORKER_DISABLE_RATE_LIMITS: "false"
+  
+  # Task Queue Configuration
+  TASK_QUEUE_DEFAULT: "default"
+  TASK_QUEUE_PRIORITY: "priority"
+  TASK_QUEUE_SCHEDULED: "scheduled"
+  TASK_QUEUE_MONITORING: "monitoring"
+  
+  # Monitoring and Alerting
+  ALERT_EMAIL_RECIPIENTS: "alerts@sparkrobotic.com"
+  ALERT_SLACK_CHANNEL: "#alerts"
+  ALERT_PAGERDUTY_SERVICE_KEY: ""
+  
+  # Performance Monitoring
+  PERFORMANCE_MONITORING_ENABLED: "true"
+  PERFORMANCE_SAMPLING_RATE: "0.1"
+  PERFORMANCE_TRACE_ENABLED: "true"
+  
+  # Security Monitoring
+  SECURITY_MONITORING_ENABLED: "true"
+  SECURITY_ALERT_THRESHOLD: "5"
+  SECURITY_BLOCK_THRESHOLD: "10"
+  
+  # Audit Logging
+  AUDIT_LOGGING_ENABLED: "true"
+  AUDIT_LOG_RETENTION_DAYS: "365"
+  AUDIT_LOG_ENCRYPTION: "true" 

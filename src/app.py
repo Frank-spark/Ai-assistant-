@@ -19,6 +19,9 @@ from .integrations.webhooks import slack_router, gmail_router, asana_router
 from .workflows.router import workflow_router
 from .ai.chain import init_ai_chain
 from .kb.retriever import init_kb_retriever
+from .web.dashboard import router as dashboard_router
+from .web.landing import router as landing_router
+from .saas.auth import router as auth_router
 
 # Setup logging
 setup_logging()
@@ -126,10 +129,19 @@ def create_app() -> FastAPI:
             content={"detail": "Internal server error"}
         )
     
-    # Health check endpoint
-    @app.get("/healthz")
+    # Health check endpoints
+    @app.get("/health")
     async def health_check() -> Dict[str, Any]:
-        """Health check endpoint."""
+        """Health check endpoint for Docker."""
+        return {
+            "status": "healthy",
+            "service": "reflex-executive-assistant",
+            "version": "0.1.0"
+        }
+    
+    @app.get("/healthz")
+    async def health_check_detailed() -> Dict[str, Any]:
+        """Detailed health check endpoint."""
         return {
             "status": "healthy",
             "service": "reflex-executive-assistant",
@@ -141,6 +153,11 @@ def create_app() -> FastAPI:
     app.include_router(gmail_router, prefix="/webhooks/gmail", tags=["gmail"])
     app.include_router(asana_router, prefix="/webhooks/asana", tags=["asana"])
     app.include_router(workflow_router, prefix="/workflows", tags=["workflows"])
+    
+    # SaaS web interface
+    app.include_router(landing_router, tags=["landing"])
+    app.include_router(auth_router, tags=["authentication"])
+    app.include_router(dashboard_router, tags=["dashboard"])
     
     return app
 

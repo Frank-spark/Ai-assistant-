@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Reflex AI Assistant{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar-transition {
+            transition: all 0.3s ease;
+        }
+        .card-hover {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Logo and Brand -->
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <a href="/dashboard" class="flex items-center">
+                            <div class="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
+                                <i class="fas fa-robot text-white text-sm"></i>
+                            </div>
+                            <span class="ml-2 text-xl font-bold text-gray-900">Reflex</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/dashboard" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-home mr-2"></i>Dashboard
+                    </a>
+                    <a href="/dashboard/conversations" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-comments mr-2"></i>Conversations
+                    </a>
+                    <a href="/dashboard/workflows" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-project-diagram mr-2"></i>Workflows
+                    </a>
+                    <a href="/dashboard/integrations" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-plug mr-2"></i>Integrations
+                    </a>
+                    <a href="/dashboard/analytics" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-chart-bar mr-2"></i>Analytics
+                    </a>
+                </div>
+                
+                <!-- User Menu -->
+                <div class="flex items-center space-x-4">
+                    <!-- Notifications -->
+                    <button class="text-gray-700 hover:text-gray-900 p-2 rounded-md">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    
+                    <!-- User Dropdown -->
+                    <div class="relative">
+                        <button class="flex items-center text-gray-700 hover:text-gray-900 p-2 rounded-md">
+                            <div class="w-8 h-8 gradient-bg rounded-full flex items-center justify-center">
+                                <span class="text-white text-sm font-medium">
+                                    {{ user.first_name[0] }}{{ user.last_name[0] }}
+                                </span>
+                            </div>
+                            <span class="ml-2 text-sm font-medium">{{ user.first_name }}</span>
+                            <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden">
+                            <a href="/dashboard/settings" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-cog mr-2"></i>Settings
+                            </a>
+                            <a href="/dashboard/help" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-question-circle mr-2"></i>Help
+                            </a>
+                            <hr class="my-1">
+                            <a href="/auth/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Sign Out
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Menu Button -->
+    <div class="md:hidden">
+        <button class="mobile-menu-button bg-white p-2 rounded-md text-gray-700 hover:text-gray-900">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    
+    <!-- Mobile Menu -->
+    <div class="mobile-menu hidden md:hidden bg-white border-b border-gray-200">
+        <div class="px-2 pt-2 pb-3 space-y-1">
+            <a href="/dashboard" class="block px-3 py-2 text-gray-700 hover:text-gray-900 rounded-md">
+                <i class="fas fa-home mr-2"></i>Dashboard
+            </a>
+            <a href="/dashboard/conversations" class="block px-3 py-2 text-gray-700 hover:text-gray-900 rounded-md">
+                <i class="fas fa-comments mr-2"></i>Conversations
+            </a>
+            <a href="/dashboard/workflows" class="block px-3 py-2 text-gray-700 hover:text-gray-900 rounded-md">
+                <i class="fas fa-project-diagram mr-2"></i>Workflows
+            </a>
+            <a href="/dashboard/integrations" class="block px-3 py-2 text-gray-700 hover:text-gray-900 rounded-md">
+                <i class="fas fa-plug mr-2"></i>Integrations
+            </a>
+            <a href="/dashboard/analytics" class="block px-3 py-2 text-gray-700 hover:text-gray-900 rounded-md">
+                <i class="fas fa-chart-bar mr-2"></i>Analytics
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <!-- Breadcrumbs -->
+        {% block breadcrumbs %}{% endblock %}
+        
+        <!-- Page Header -->
+        {% block page_header %}{% endblock %}
+        
+        <!-- Flash Messages -->
+        {% if request.query_params.get('verified') %}
+        <div class="mb-4 bg-green-50 border border-green-200 rounded-md p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-400"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-800">
+                        Your email has been verified successfully!
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Main Content Area -->
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center">
+                <div class="text-sm text-gray-500">
+                    © 2024 Reflex AI Assistant. All rights reserved.
+                </div>
+                <div class="flex space-x-6">
+                    <a href="/dashboard/help" class="text-sm text-gray-500 hover:text-gray-700">
+                        Help
+                    </a>
+                    <a href="#" class="text-sm text-gray-500 hover:text-gray-700">
+                        Privacy
+                    </a>
+                    <a href="#" class="text-sm text-gray-500 hover:text-gray-700">
+                        Terms
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.mobile-menu-button').addEventListener('click', function() {
+            document.querySelector('.mobile-menu').classList.toggle('hidden');
+        });
+        
+        // User dropdown toggle
+        document.querySelector('.relative button').addEventListener('click', function() {
+            document.querySelector('.absolute').classList.toggle('hidden');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.querySelector('.absolute');
+            const button = document.querySelector('.relative button');
+            
+            if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+        
+        // Auto-hide flash messages
+        setTimeout(function() {
+            const flashMessage = document.querySelector('.bg-green-50');
+            if (flashMessage) {
+                flashMessage.style.opacity = '0';
+                setTimeout(function() {
+                    flashMessage.remove();
+                }, 300);
+            }
+        }, 5000);
+    </script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html> 

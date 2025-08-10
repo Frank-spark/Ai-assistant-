@@ -56,6 +56,7 @@ class Settings(PydanticBaseSettings):
     
     # Security and Authentication
     secret_key: str = Field(..., env="SECRET_KEY")
+    jwt_secret: str = Field(..., env="JWT_SECRET")
     jwt_algorithm: str = Field(default="HS256", env="JWT_ALGORITHM")
     access_token_expire_minutes: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
     

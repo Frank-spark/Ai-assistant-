@@ -1,0 +1,1153 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reflex-executive-celery
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: celery
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: reflex-executive-assistant
+      component: celery
+  template:
+    metadata:
+      labels:
+        app: reflex-executive-assistant
+        component: celery
+    spec:
+      containers:
+      - name: celery-worker
+        image: reflex-executive:latest
+        command: ["celery"]
+        args: ["-A", "src.jobs.celery_app", "worker", "--loglevel=info", "--concurrency=4"]
+        env:
+        # Application Configuration
+        - name: APP_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: APP_ENV
+        - name: DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: DEBUG
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: LOG_LEVEL
+        
+        # Celery Configuration
+        - name: CELERY_ACCEPT_CONTENT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_ACCEPT_CONTENT
+        - name: CELERY_TASK_SERIALIZER
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_TASK_SERIALIZER
+        - name: CELERY_RESULT_SERIALIZER
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_RESULT_SERIALIZER
+        - name: CELERY_TIMEZONE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_TIMEZONE
+        - name: CELERY_ENABLE_UTC
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_ENABLE_UTC
+        - name: CELERY_TASK_TRACK_STARTED
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_TASK_TRACK_STARTED
+        - name: CELERY_TASK_TIME_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_TASK_TIME_LIMIT
+        - name: CELERY_TASK_SOFT_TIME_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_TASK_SOFT_TIME_LIMIT
+        - name: CELERY_WORKER_PREFETCH_MULTIPLIER
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_WORKER_PREFETCH_MULTIPLIER
+        - name: CELERY_WORKER_MAX_TASKS_PER_CHILD
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_WORKER_MAX_TASKS_PER_CHILD
+        
+        # Database Configuration
+        - name: DATABASE_POOL_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: DATABASE_POOL_SIZE
+        - name: DATABASE_MAX_OVERFLOW
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: DATABASE_MAX_OVERFLOW
+        - name: DATABASE_POOL_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: DATABASE_POOL_TIMEOUT
+        - name: DATABASE_POOL_RECYCLE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: DATABASE_POOL_RECYCLE
+        
+        # Redis Configuration
+        - name: REDIS_MAX_CONNECTIONS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: REDIS_MAX_CONNECTIONS
+        - name: REDIS_SOCKET_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: REDIS_SOCKET_TIMEOUT
+        - name: REDIS_SOCKET_CONNECT_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: REDIS_SOCKET_CONNECT_TIMEOUT
+        
+        # Feature Flags
+        - name: ENABLE_KNOWLEDGE_BASE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ENABLE_KNOWLEDGE_BASE
+        - name: ENABLE_BACKGROUND_JOBS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ENABLE_BACKGROUND_JOBS
+        - name: ENABLE_WEBHOOKS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ENABLE_WEBHOOKS
+        - name: ENABLE_MONITORING
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ENABLE_MONITORING
+        
+        # Email Configuration
+        - name: EMAIL_BATCH_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: EMAIL_BATCH_SIZE
+        - name: EMAIL_RETRY_ATTEMPTS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: EMAIL_RETRY_ATTEMPTS
+        - name: EMAIL_RETRY_DELAY
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: EMAIL_RETRY_DELAY
+        
+        # Slack Configuration
+        - name: SLACK_MESSAGE_RETRY_ATTEMPTS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: SLACK_MESSAGE_RETRY_ATTEMPTS
+        - name: SLACK_MESSAGE_RETRY_DELAY
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: SLACK_MESSAGE_RETRY_DELAY
+        
+        # Asana Configuration
+        - name: ASANA_SYNC_INTERVAL
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ASANA_SYNC_INTERVAL
+        - name: ASANA_BATCH_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ASANA_BATCH_SIZE
+        
+        # Maintenance Configuration
+        - name: MAINTENANCE_WINDOW_START
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: MAINTENANCE_WINDOW_START
+        - name: MAINTENANCE_WINDOW_DURATION
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: MAINTENANCE_WINDOW_DURATION
+        - name: BACKUP_RETENTION_DAYS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: BACKUP_RETENTION_DAYS
+        
+        # Logging Configuration
+        - name: LOG_FORMAT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: LOG_FORMAT
+        - name: LOG_LEVEL_ROOT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: LOG_LEVEL_ROOT
+        - name: LOG_LEVEL_APP
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: LOG_LEVEL_APP
+        - name: LOG_LEVEL_DB
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: LOG_LEVEL_DB
+        - name: LOG_LEVEL_CELERY
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: LOG_LEVEL_CELERY
+        
+        # Performance Configuration
+        - name: WORKER_PROCESSES
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: WORKER_PROCESSES
+        - name: WORKER_THREADS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: WORKER_THREADS
+        - name: MAX_CONCURRENT_REQUESTS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: MAX_CONCURRENT_REQUESTS
+        - name: REQUEST_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: REQUEST_TIMEOUT
+        
+        # Knowledge Base Configuration
+        - name: KB_SEARCH_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: KB_SEARCH_LIMIT
+        - name: KB_SIMILARITY_THRESHOLD
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: KB_SIMILARITY_THRESHOLD
+        - name: KB_UPDATE_INTERVAL
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: KB_UPDATE_INTERVAL
+        
+        # Database Migration Configuration
+        - name: MIGRATION_AUTO_UPGRADE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: MIGRATION_AUTO_UPGRADE
+        - name: MIGRATION_BACKUP_BEFORE_UPGRADE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: MIGRATION_BACKUP_BEFORE_UPGRADE
+        
+        # Backup Configuration
+        - name: BACKUP_SCHEDULE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: BACKUP_SCHEDULE
+        - name: BACKUP_COMPRESSION
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: BACKUP_COMPRESSION
+        - name: BACKUP_ENCRYPTION
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: BACKUP_ENCRYPTION
+        
+        # Monitoring Configuration
+        - name: METRICS_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: METRICS_ENABLED
+        - name: ALERTING_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ALERTING_ENABLED
+        
+        # Security Configuration
+        - name: JWT_EXPIRATION
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: JWT_EXPIRATION
+        - name: JWT_REFRESH_EXPIRATION
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: JWT_REFRESH_EXPIRATION
+        
+        # Rate Limiting Configuration
+        - name: RATE_LIMIT_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: RATE_LIMIT_ENABLED
+        - name: RATE_LIMIT_STRATEGY
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: RATE_LIMIT_STRATEGY
+        - name: RATE_LIMIT_BURST
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: RATE_LIMIT_BURST
+        
+        # Cache Configuration
+        - name: CACHE_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CACHE_ENABLED
+        - name: CACHE_STRATEGY
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CACHE_STRATEGY
+        - name: CACHE_PERSISTENCE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CACHE_PERSISTENCE
+        
+        # Queue Configuration
+        - name: QUEUE_PRIORITY_LEVELS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: QUEUE_PRIORITY_LEVELS
+        - name: QUEUE_DEFAULT_PRIORITY
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: QUEUE_DEFAULT_PRIORITY
+        - name: QUEUE_MAX_RETRIES
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: QUEUE_MAX_RETRIES
+        
+        # File Storage Configuration
+        - name: STORAGE_PROVIDER
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: STORAGE_PROVIDER
+        - name: STORAGE_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: STORAGE_PATH
+        - name: STORAGE_MAX_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: STORAGE_MAX_SIZE
+        
+        # Email Template Configuration
+        - name: EMAIL_TEMPLATE_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: EMAIL_TEMPLATE_PATH
+        - name: EMAIL_DEFAULT_SENDER
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: EMAIL_DEFAULT_SENDER
+        - name: EMAIL_REPLY_TO
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: EMAIL_REPLY_TO
+        
+        # Notification Configuration
+        - name: NOTIFICATION_CHANNELS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: NOTIFICATION_CHANNELS
+        - name: NOTIFICATION_PRIORITY_LEVELS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: NOTIFICATION_PRIORITY_LEVELS
+        
+        # Integration Webhook Configuration
+        - name: WEBHOOK_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: WEBHOOK_TIMEOUT
+        - name: WEBHOOK_RETRY_ATTEMPTS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: WEBHOOK_RETRY_ATTEMPTS
+        - name: WEBHOOK_RETRY_DELAY
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: WEBHOOK_RETRY_DELAY
+        - name: WEBHOOK_SIGNATURE_HEADER
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: WEBHOOK_SIGNATURE_HEADER
+        
+        # API Rate Limiting
+        - name: API_RATE_LIMIT_REQUESTS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: API_RATE_LIMIT_REQUESTS
+        - name: API_RATE_LIMIT_WINDOW
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: API_RATE_LIMIT_WINDOW
+        - name: API_RATE_LIMIT_BURST
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: API_RATE_LIMIT_BURST
+        
+        # Database Connection Pooling
+        - name: DB_POOL_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: DB_POOL_SIZE
+        - name: DB_MAX_OVERFLOW
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: DB_MAX_OVERFLOW
+        - name: DB_POOL_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: DB_POOL_TIMEOUT
+        - name: DB_POOL_RECYCLE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: DB_POOL_RECYCLE
+        
+        # Redis Connection Pooling
+        - name: REDIS_POOL_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: REDIS_POOL_SIZE
+        - name: REDIS_SOCKET_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: REDIS_SOCKET_TIMEOUT
+        - name: REDIS_SOCKET_CONNECT_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: REDIS_SOCKET_CONNECT_TIMEOUT
+        
+        # Celery Worker Configuration
+        - name: CELERY_WORKER_CONCURRENCY
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_WORKER_CONCURRENCY
+        - name: CELERY_WORKER_PREFETCH_MULTIPLIER
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_WORKER_PREFETCH_MULTIPLIER
+        - name: CELERY_WORKER_MAX_TASKS_PER_CHILD
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_WORKER_MAX_TASKS_PER_CHILD
+        - name: CELERY_WORKER_DISABLE_RATE_LIMITS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_WORKER_DISABLE_RATE_LIMITS
+        
+        # Task Queue Configuration
+        - name: TASK_QUEUE_DEFAULT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: TASK_QUEUE_DEFAULT
+        - name: TASK_QUEUE_PRIORITY
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: TASK_QUEUE_PRIORITY
+        - name: TASK_QUEUE_SCHEDULED
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: TASK_QUEUE_SCHEDULED
+        - name: TASK_QUEUE_MONITORING
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: TASK_QUEUE_MONITORING
+        
+        # Monitoring and Alerting
+        - name: ALERT_EMAIL_RECIPIENTS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ALERT_EMAIL_RECIPIENTS
+        - name: ALERT_SLACK_CHANNEL
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ALERT_SLACK_CHANNEL
+        - name: ALERT_PAGERDUTY_SERVICE_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ALERT_PAGERDUTY_SERVICE_KEY
+        
+        # Performance Monitoring
+        - name: PERFORMANCE_MONITORING_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: PERFORMANCE_MONITORING_ENABLED
+        - name: PERFORMANCE_SAMPLING_RATE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: PERFORMANCE_SAMPLING_RATE
+        - name: PERFORMANCE_TRACE_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: PERFORMANCE_TRACE_ENABLED
+        
+        # Security Monitoring
+        - name: SECURITY_MONITORING_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: SECURITY_MONITORING_ENABLED
+        - name: SECURITY_ALERT_THRESHOLD
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: SECURITY_ALERT_THRESHOLD
+        - name: SECURITY_BLOCK_THRESHOLD
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: SECURITY_BLOCK_THRESHOLD
+        
+        # Audit Logging
+        - name: AUDIT_LOGGING_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: AUDIT_LOGGING_ENABLED
+        - name: AUDIT_LOG_RETENTION_DAYS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: AUDIT_LOG_RETENTION_DAYS
+        - name: AUDIT_LOG_ENCRYPTION
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: AUDIT_LOG_ENCRYPTION
+        
+        # Secrets (from Kubernetes secrets)
+        - name: POSTGRES_URL
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: POSTGRES_URL
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: REDIS_URL
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: OPENAI_API_KEY
+        - name: PINECONE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: PINECONE_API_KEY
+        - name: GOOGLE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: GOOGLE_CLIENT_ID
+        - name: GOOGLE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: GOOGLE_CLIENT_SECRET
+        - name: GOOGLE_REDIRECT_URI
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: GOOGLE_REDIRECT_URI
+        - name: SLACK_BOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: SLACK_BOT_TOKEN
+        - name: SLACK_SIGNING_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: SLACK_SIGNING_SECRET
+        - name: SLACK_APP_LEVEL_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: SLACK_APP_LEVEL_TOKEN
+        - name: SLACK_VERIFICATION_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: SLACK_VERIFICATION_TOKEN
+        - name: ASANA_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: ASANA_ACCESS_TOKEN
+        - name: ASANA_WORKSPACE_ID
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: ASANA_WORKSPACE_ID
+        - name: ASANA_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: ASANA_WEBHOOK_SECRET
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: SECRET_KEY
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: JWT_SECRET
+        - name: SMTP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: SMTP_USERNAME
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: SMTP_PASSWORD
+        - name: CELERY_BROKER_URL
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: CELERY_BROKER_URL
+        - name: CELERY_RESULT_BACKEND
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: CELERY_RESULT_BACKEND
+        
+        volumeMounts:
+        - name: app-storage
+          mountPath: /app/data
+        - name: app-logs
+          mountPath: /app/logs
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command:
+            - celery
+            - -A
+            - src.jobs.celery_app
+            - inspect
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - celery
+            - -A
+            - src.jobs.celery_app
+            - inspect
+            - ping
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      volumes:
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: app-storage-pvc
+      - name: app-logs
+        persistentVolumeClaim:
+          claimName: app-logs-pvc
+      imagePullSecrets:
+      - name: registry-secret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reflex-executive-celery-beat
+  namespace: reflex-executive
+  labels:
+    app: reflex-executive-assistant
+    component: celery-beat
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: reflex-executive-assistant
+      component: celery-beat
+  template:
+    metadata:
+      labels:
+        app: reflex-executive-assistant
+        component: celery-beat
+    spec:
+      containers:
+      - name: celery-beat
+        image: reflex-executive:latest
+        command: ["celery"]
+        args: ["-A", "src.jobs.celery_app", "beat", "--loglevel=info", "--scheduler=django_celery_beat.schedulers:DatabaseScheduler"]
+        env:
+        # Application Configuration
+        - name: APP_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: APP_ENV
+        - name: DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: DEBUG
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: LOG_LEVEL
+        
+        # Celery Configuration
+        - name: CELERY_ACCEPT_CONTENT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_ACCEPT_CONTENT
+        - name: CELERY_TASK_SERIALIZER
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_TASK_SERIALIZER
+        - name: CELERY_RESULT_SERIALIZER
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_RESULT_SERIALIZER
+        - name: CELERY_TIMEZONE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_TIMEZONE
+        - name: CELERY_ENABLE_UTC
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_ENABLE_UTC
+        - name: CELERY_TASK_TRACK_STARTED
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_TASK_TRACK_STARTED
+        - name: CELERY_TASK_TIME_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_TASK_TIME_LIMIT
+        - name: CELERY_TASK_SOFT_TIME_LIMIT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_TASK_SOFT_TIME_LIMIT
+        - name: CELERY_WORKER_PREFETCH_MULTIPLIER
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_WORKER_PREFETCH_MULTIPLIER
+        - name: CELERY_WORKER_MAX_TASKS_PER_CHILD
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: CELERY_WORKER_MAX_TASKS_PER_CHILD
+        
+        # Database Configuration
+        - name: DATABASE_POOL_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: DATABASE_POOL_SIZE
+        - name: DATABASE_MAX_OVERFLOW
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: DATABASE_MAX_OVERFLOW
+        - name: DATABASE_POOL_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: DATABASE_POOL_TIMEOUT
+        - name: DATABASE_POOL_RECYCLE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: DATABASE_POOL_RECYCLE
+        
+        # Redis Configuration
+        - name: REDIS_MAX_CONNECTIONS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: REDIS_MAX_CONNECTIONS
+        - name: REDIS_SOCKET_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: REDIS_SOCKET_TIMEOUT
+        - name: REDIS_SOCKET_CONNECT_TIMEOUT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: REDIS_SOCKET_CONNECT_TIMEOUT
+        
+        # Feature Flags
+        - name: ENABLE_KNOWLEDGE_BASE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ENABLE_KNOWLEDGE_BASE
+        - name: ENABLE_BACKGROUND_JOBS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ENABLE_BACKGROUND_JOBS
+        - name: ENABLE_WEBHOOKS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ENABLE_WEBHOOKS
+        - name: ENABLE_MONITORING
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ENABLE_MONITORING
+        
+        # Maintenance Configuration
+        - name: MAINTENANCE_WINDOW_START
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: MAINTENANCE_WINDOW_START
+        - name: MAINTENANCE_WINDOW_DURATION
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: MAINTENANCE_WINDOW_DURATION
+        - name: BACKUP_RETENTION_DAYS
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: BACKUP_RETENTION_DAYS
+        
+        # Backup Configuration
+        - name: BACKUP_SCHEDULE
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: BACKUP_SCHEDULE
+        - name: BACKUP_COMPRESSION
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: BACKUP_COMPRESSION
+        - name: BACKUP_ENCRYPTION
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: BACKUP_ENCRYPTION
+        
+        # Logging Configuration
+        - name: LOG_FORMAT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: LOG_FORMAT
+        - name: LOG_LEVEL_ROOT
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: LOG_LEVEL_ROOT
+        - name: LOG_LEVEL_APP
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: LOG_LEVEL_APP
+        - name: LOG_LEVEL_DB
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: LOG_LEVEL_DB
+        - name: LOG_LEVEL_CELERY
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: LOG_LEVEL_CELERY
+        
+        # Knowledge Base Configuration
+        - name: KB_UPDATE_INTERVAL
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: KB_UPDATE_INTERVAL
+        
+        # Asana Configuration
+        - name: ASANA_SYNC_INTERVAL
+          valueFrom:
+            configMapKeyRef:
+              name: reflex-executive-config
+              key: ASANA_SYNC_INTERVAL
+        
+        # Secrets (from Kubernetes secrets)
+        - name: POSTGRES_URL
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: POSTGRES_URL
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: REDIS_URL
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: OPENAI_API_KEY
+        - name: PINECONE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: PINECONE_API_KEY
+        - name: GOOGLE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: GOOGLE_CLIENT_ID
+        - name: GOOGLE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: GOOGLE_CLIENT_SECRET
+        - name: GOOGLE_REDIRECT_URI
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: GOOGLE_REDIRECT_URI
+        - name: SLACK_BOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: SLACK_BOT_TOKEN
+        - name: SLACK_SIGNING_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: SLACK_SIGNING_SECRET
+        - name: SLACK_APP_LEVEL_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: SLACK_APP_LEVEL_TOKEN
+        - name: SLACK_VERIFICATION_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: SLACK_VERIFICATION_TOKEN
+        - name: ASANA_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: ASANA_ACCESS_TOKEN
+        - name: ASANA_WORKSPACE_ID
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: ASANA_WORKSPACE_ID
+        - name: ASANA_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: ASANA_WEBHOOK_SECRET
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: SECRET_KEY
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: JWT_SECRET
+        - name: SMTP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: SMTP_USERNAME
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: SMTP_PASSWORD
+        - name: CELERY_BROKER_URL
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: CELERY_BROKER_URL
+        - name: CELERY_RESULT_BACKEND
+          valueFrom:
+            secretKeyRef:
+              name: reflex-executive-secrets
+              key: CELERY_RESULT_BACKEND
+        
+        volumeMounts:
+        - name: app-storage
+          mountPath: /app/data
+        - name: app-logs
+          mountPath: /app/logs
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - celery
+            - -A
+            - src.jobs.celery_app
+            - inspect
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - celery
+            - -A
+            - src.jobs.celery_app
+            - inspect
+            - ping
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      volumes:
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: app-storage-pvc
+      - name: app-logs
+        persistentVolumeClaim:
+          claimName: app-logs-pvc
+      imagePullSecrets:
+      - name: registry-secret 

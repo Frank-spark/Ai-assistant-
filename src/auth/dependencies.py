@@ -5,9 +5,11 @@ import hmac
 import hashlib
 import time
 import json
+from datetime import datetime
 from typing import Optional
 from fastapi import Request, HTTPException, Depends, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import jwt
 
 from ..config import get_settings
 
@@ -134,11 +136,38 @@ async def get_current_user(
             logger.warning("JWT secret not configured")
             return None
         
-        # TODO: Implement JWT token validation
-        # This would decode the JWT token and return user information
-        
-        logger.debug("JWT token validation attempted")
-        return None
+        # Decode and validate JWT token
+        try:
+            payload = jwt.decode(
+                credentials.credentials,
+                jwt_secret,
+                algorithms=[settings.jwt_algorithm]
+            )
+            
+            # Check if token is expired
+            exp = payload.get("exp")
+            if exp and datetime.utcnow().timestamp() > exp:
+                logger.warning("JWT token expired")
+                return None
+            
+            # Extract user information
+            user_info = {
+                "user_id": payload.get("sub"),
+                "email": payload.get("email"),
+                "role": payload.get("role", "user"),
+                "permissions": payload.get("permissions", []),
+                "exp": exp
+            }
+            
+            logger.debug(f"JWT token validated for user: {user_info['user_id']}")
+            return user_info
+            
+        except jwt.ExpiredSignatureError:
+            logger.warning("JWT token expired")
+            return None
+        except jwt.InvalidTokenError as e:
+            logger.warning(f"Invalid JWT token: {e}")
+            return None
         
     except Exception as e:
         logger.error(f"Error getting current user: {e}")

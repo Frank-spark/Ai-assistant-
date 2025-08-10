@@ -1,0 +1,94 @@
+{
+  "documents": [
+    {
+      "content": "Company Overview: Spark Robotic AI is a leading provider of intelligent executive assistant solutions. Founded in 2024, we specialize in AI-powered productivity tools that integrate seamlessly with existing business workflows. Our mission is to revolutionize how executives work by providing intelligent, context-aware assistance that enhances decision-making and operational efficiency.",
+      "metadata": {
+        "type": "company_overview",
+        "category": "organization",
+        "priority": "high",
+        "source": "company_profile"
+      }
+    },
+    {
+      "content": "Product Portfolio: Our flagship product is the Reflex Executive AI Assistant, an intelligent system that integrates with Slack, Gmail, and Asana to provide comprehensive executive support. The system includes natural language processing, workflow automation, and predictive analytics capabilities.",
+      "metadata": {
+        "type": "product_info",
+        "category": "products",
+        "priority": "high",
+        "source": "product_docs"
+      }
+    },
+    {
+      "content": "Target Markets: We focus on mid to large enterprises in technology, finance, healthcare, and professional services. Our solutions are particularly well-suited for companies with distributed teams and complex workflow requirements.",
+      "metadata": {
+        "type": "market_info",
+        "category": "business",
+        "priority": "medium",
+        "source": "market_research"
+      }
+    },
+    {
+      "content": "Customer Success Stories: Our clients report 40% improvement in executive productivity, 60% reduction in administrative overhead, and 80% faster response times to critical business matters. Notable clients include Fortune 500 companies in technology and finance sectors.",
+      "metadata": {
+        "type": "case_study",
+        "category": "customer_success",
+        "priority": "medium",
+        "source": "marketing"
+      }
+    },
+    {
+      "content": "Technical Architecture: Our platform is built on modern cloud infrastructure with microservices architecture. We use advanced AI models including GPT-4, custom machine learning algorithms, and real-time data processing capabilities. The system is designed for high availability and scalability.",
+      "metadata": {
+        "type": "technical_info",
+        "category": "technology",
+        "priority": "medium",
+        "source": "engineering"
+      }
+    },
+    {
+      "content": "Security and Compliance: We maintain SOC 2 Type II compliance, GDPR compliance, and implement enterprise-grade security measures. All data is encrypted in transit and at rest, with regular security audits and penetration testing.",
+      "metadata": {
+        "type": "security_info",
+        "category": "compliance",
+        "priority": "critical",
+        "source": "security_team"
+      }
+    },
+    {
+      "content": "Support and Maintenance: We provide 24/7 technical support with dedicated account managers for enterprise clients. Our support team includes AI specialists, integration experts, and business process consultants.",
+      "metadata": {
+        "type": "support_info",
+        "category": "customer_service",
+        "priority": "medium",
+        "source": "support_team"
+      }
+    },
+    {
+      "content": "Pricing Model: We offer flexible pricing based on user count and feature requirements. Enterprise plans include custom integrations, dedicated support, and advanced analytics. We also provide pilot programs for evaluation.",
+      "metadata": {
+        "type": "pricing_info",
+        "category": "sales",
+        "priority": "medium",
+        "source": "sales_team"
+      }
+    },
+    {
+      "content": "Partnership Strategy: We actively partner with system integrators, consulting firms, and technology providers. Our partner program includes training, certification, and revenue sharing opportunities.",
+      "metadata": {
+        "type": "partnership_info",
+        "category": "business_development",
+        "priority": "low",
+        "source": "partnership_team"
+      }
+    },
+    {
+      "content": "Future Roadmap: Our product roadmap includes advanced AI capabilities, expanded integration options, and industry-specific solutions. We're investing heavily in research and development to maintain our technology leadership position.",
+      "metadata": {
+        "type": "roadmap_info",
+        "category": "product_development",
+        "priority": "medium",
+        "source": "product_team"
+      }
+    }
+  ]
+} 

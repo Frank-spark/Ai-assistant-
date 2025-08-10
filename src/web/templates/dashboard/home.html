@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Reflex AI Assistant{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="flex" aria-label="Breadcrumb">
+    <ol class="flex items-center space-x-4">
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-home text-gray-400"></i>
+                <span class="ml-2 text-sm font-medium text-gray-500">Dashboard</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block page_header %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Welcome back, {{ user.first_name }}!</h1>
+    <p class="mt-2 text-gray-600">Here's what's happening with your AI assistant today.</p>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Quick Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Conversations -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 card-hover">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-comments text-blue-600"></i>
+                </div>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-500">Total Conversations</p>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.total_conversations }}</p>
+            </div>
+        </div>
+        <div class="mt-4">
+            <span class="text-sm text-green-600">
+                <i class="fas fa-arrow-up mr-1"></i>12% from last month
+            </span>
+        </div>
+    </div>
+    
+    <!-- Total Workflows -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 card-hover">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-project-diagram text-green-600"></i>
+                </div>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-500">Total Workflows</p>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.total_workflows }}</p>
+            </div>
+        </div>
+        <div class="mt-4">
+            <span class="text-sm text-green-600">
+                <i class="fas fa-arrow-up mr-1"></i>8% from last month
+            </span>
+        </div>
+    </div>
+    
+    <!-- Slack Conversations -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 card-hover">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fab fa-slack text-purple-600"></i>
+                </div>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-500">Slack Conversations</p>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.slack_conversations }}</p>
+            </div>
+        </div>
+        <div class="mt-4">
+            <span class="text-sm text-green-600">
+                <i class="fas fa-arrow-up mr-1"></i>15% from last month
+            </span>
+        </div>
+    </div>
+    
+    <!-- Email Conversations -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 card-hover">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-envelope text-red-600"></i>
+                </div>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-500">Email Conversations</p>
+                <p class="text-2xl font-bold text-gray-900">{{ stats.email_conversations }}</p>
+            </div>
+        </div>
+        <div class="mt-4">
+            <span class="text-sm text-green-600">
+                <i class="fas fa-arrow-up mr-1"></i>6% from last month
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <div class="grid grid-cols-2 gap-4">
+            <a href="/dashboard/conversations" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-comments text-blue-600"></i>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">Start Conversation</p>
+                    <p class="text-sm text-gray-600">Chat with your AI</p>
+                </div>
+            </a>
+            
+            <a href="/dashboard/workflows" class="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-project-diagram text-green-600"></i>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">Create Workflow</p>
+                    <p class="text-sm text-gray-600">Automate tasks</p>
+                </div>
+            </a>
+            
+            <a href="/dashboard/integrations" class="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-plug text-purple-600"></i>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">Connect Tools</p>
+                    <p class="text-sm text-gray-600">Add integrations</p>
+                </div>
+            </a>
+            
+            <a href="/dashboard/settings" class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
+                    <i class="fas fa-cog text-gray-600"></i>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">Settings</p>
+                    <p class="text-sm text-gray-600">Configure preferences</p>
+                </div>
+            </a>
+        </div>
+    </div>
+    
+    <!-- AI Assistant Status -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">AI Assistant Status</h3>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-green-400 rounded-full mr-3"></div>
+                    <span class="text-sm font-medium text-gray-900">AI Assistant</span>
+                </div>
+                <span class="text-sm text-green-600">Online</span>
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-green-400 rounded-full mr-3"></div>
+                    <span class="text-sm font-medium text-gray-900">Slack Integration</span>
+                </div>
+                <span class="text-sm text-green-600">
+                    {% if user.slack_workspace_id %}Connected{% else %}Not Connected{% endif %}
+                </span>
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 {% if user.gmail_connected %}bg-green-400{% else %}bg-gray-400{% endif %} rounded-full mr-3"></div>
+                    <span class="text-sm font-medium text-gray-900">Gmail Integration</span>
+                </div>
+                <span class="text-sm {% if user.gmail_connected %}text-green-600{% else %}text-gray-500{% endif %}">
+                    {% if user.gmail_connected %}Connected{% else %}Not Connected{% endif %}
+                </span>
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 {% if user.asana_workspace_id %}bg-green-400{% else %}bg-gray-400{% endif %} rounded-full mr-3"></div>
+                    <span class="text-sm font-medium text-gray-900">Asana Integration</span>
+                </div>
+                <span class="text-sm {% if user.asana_workspace_id %}text-green-600{% else %}text-gray-500{% endif %}">
+                    {% if user.asana_workspace_id %}Connected{% else %}Not Connected{% endif %}
+                </span>
+            </div>
+        </div>
+        
+        <div class="mt-6 pt-4 border-t border-gray-200">
+            <a href="/dashboard/integrations" class="btn-primary text-white px-4 py-2 rounded-md text-sm font-medium inline-flex items-center">
+                <i class="fas fa-plug mr-2"></i>
+                Connect More Tools
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Recent Conversations -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">Recent Conversations</h3>
+            <a href="/dashboard/conversations" class="text-sm text-blue-600 hover:text-blue-800">View All</a>
+        </div>
+        
+        {% if recent_conversations %}
+        <div class="space-y-4">
+            {% for conversation in recent_conversations %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 {% if conversation.platform == 'slack' %}bg-purple-100{% elif conversation.platform == 'email' %}bg-red-100{% else %}bg-blue-100{% endif %} rounded-lg flex items-center justify-center mr-3">
+                        <i class="{% if conversation.platform == 'slack' %}fab fa-slack text-purple-600{% elif conversation.platform == 'email' %}fas fa-envelope text-red-600{% else %}fas fa-comments text-blue-600{% endif %} text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">{{ conversation.title or 'Untitled Conversation' }}</p>
+                        <p class="text-xs text-gray-500">{{ conversation.platform|title }} • {{ conversation.updated_at.strftime('%b %d, %Y') }}</p>
+                    </div>
+                </div>
+                <a href="/dashboard/conversations/{{ conversation.id }}" class="text-sm text-blue-600 hover:text-blue-800">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-comments text-gray-400 text-xl"></i>
+            </div>
+            <p class="text-gray-500">No conversations yet</p>
+            <p class="text-sm text-gray-400 mt-1">Start your first conversation with your AI assistant</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Recent Workflows -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">Recent Workflows</h3>
+            <a href="/dashboard/workflows" class="text-sm text-blue-600 hover:text-blue-800">View All</a>
+        </div>
+        
+        {% if recent_workflows %}
+        <div class="space-y-4">
+            {% for workflow in recent_workflows %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 {% if workflow.status == 'completed' %}bg-green-100{% elif workflow.status == 'failed' %}bg-red-100{% else %}bg-yellow-100{% endif %} rounded-lg flex items-center justify-center mr-3">
+                        <i class="{% if workflow.status == 'completed' %}fas fa-check text-green-600{% elif workflow.status == 'failed' %}fas fa-times text-red-600{% else %}fas fa-clock text-yellow-600{% endif %} text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">{{ workflow.workflow_type|replace('_', ' ')|title }}</p>
+                        <p class="text-xs text-gray-500">{{ workflow.status|title }} • {{ workflow.created_at.strftime('%b %d, %Y') }}</p>
+                    </div>
+                </div>
+                <span class="text-xs px-2 py-1 rounded-full {% if workflow.status == 'completed' %}bg-green-100 text-green-800{% elif workflow.status == 'failed' %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                    {{ workflow.status|title }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-project-diagram text-gray-400 text-xl"></i>
+            </div>
+            <p class="text-gray-500">No workflows yet</p>
+            <p class="text-sm text-gray-400 mt-1">Create your first automated workflow</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Getting Started Guide -->
+{% if not user.slack_workspace_id and not user.gmail_connected and not user.asana_workspace_id %}
+<div class="mt-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-200">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-rocket text-blue-600"></i>
+            </div>
+        </div>
+        <div class="ml-4">
+            <h3 class="text-lg font-semibold text-gray-900">Get Started with Reflex</h3>
+            <p class="mt-1 text-gray-600">Connect your tools to unlock the full power of your AI assistant.</p>
+            <div class="mt-4 flex space-x-4">
+                <a href="/dashboard/integrations" class="btn-primary text-white px-4 py-2 rounded-md text-sm font-medium">
+                    Connect Your Tools
+                </a>
+                <a href="/dashboard/help" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    Learn More
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %} 
