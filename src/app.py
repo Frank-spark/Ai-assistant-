@@ -4,7 +4,7 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Dict, Any
 
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
@@ -28,6 +28,10 @@ from .web.dashboard import router as dashboard_router
 from .web.landing import router as landing_router
 from .web.ceo_vision import router as ceo_vision_router
 from .saas.auth import router as auth_router
+from .integrations.webhooks.slack import router as slack_webhook_router
+from .integrations.webhooks.gmail import router as gmail_webhook_router
+from .integrations.webhooks.asana import router as asana_webhook_router
+from .integrations.meeting_recorder import get_meeting_manager
 
 # Setup logging
 setup_logging()
@@ -207,6 +211,152 @@ def create_app() -> FastAPI:
     app.include_router(auth_router, tags=["authentication"])
     app.include_router(dashboard_router, tags=["dashboard"])
     app.include_router(ceo_vision_router, tags=["ceo-vision"])
+
+    # Include webhook routers
+    app.include_router(slack_webhook_router, prefix="/webhooks/slack", tags=["slack"])
+    app.include_router(gmail_webhook_router, prefix="/webhooks/gmail", tags=["gmail"])
+    app.include_router(asana_webhook_router, prefix="/webhooks/asana", tags=["asana"])
+
+    # Meeting recording endpoints
+    @app.post("/api/meetings/start")
+    async def start_meeting_recording(
+        request: Request,
+        meeting_data: dict = Body(...)
+    ):
+        """Start recording an executive meeting."""
+        try:
+            meeting_title = meeting_data.get("title", "Executive Meeting")
+            attendees = meeting_data.get("attendees", [])
+            meeting_type = meeting_data.get("type", "executive")
+            
+            meeting_manager = get_meeting_manager()
+            result = await meeting_manager.start_executive_meeting(
+                meeting_title=meeting_title,
+                attendees=attendees,
+                meeting_type=meeting_type
+            )
+            
+            return {
+                "status": "success",
+                "message": "Meeting recording started",
+                "data": result
+            }
+            
+        except Exception as e:
+            logger.error(f"Error starting meeting recording: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.post("/api/meetings/{meeting_id}/end")
+    async def end_meeting_recording(meeting_id: str):
+        """End recording and analyze executive meeting."""
+        try:
+            meeting_manager = get_meeting_manager()
+            result = await meeting_manager.end_executive_meeting(meeting_id)
+            
+            return {
+                "status": "success",
+                "message": "Meeting recording completed and analyzed",
+                "data": result
+            }
+            
+        except Exception as e:
+            logger.error(f"Error ending meeting recording: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.get("/api/meetings/{meeting_id}/summary")
+    async def get_meeting_summary(meeting_id: str):
+        """Get comprehensive summary of a meeting."""
+        try:
+            meeting_manager = get_meeting_manager()
+            summary = await meeting_manager.get_meeting_summary(meeting_id)
+            
+            return {
+                "status": "success",
+                "data": summary
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting meeting summary: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.get("/api/meetings/active")
+    async def get_active_meetings():
+        """Get list of currently active meetings."""
+        try:
+            meeting_manager = get_meeting_manager()
+            active_meetings = meeting_manager.get_active_meetings()
+            
+            return {
+                "status": "success",
+                "data": {
+                    "active_meetings": active_meetings,
+                    "count": len(active_meetings)
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting active meetings: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.get("/api/meetings/{meeting_id}/status")
+    async def get_meeting_status(meeting_id: str):
+        """Get current status of a meeting recording."""
+        try:
+            meeting_manager = get_meeting_manager()
+            status = meeting_manager.recorder.get_recording_status()
+            
+            return {
+                "status": "success",
+                "data": status
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting meeting status: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.post("/api/meetings/{meeting_id}/analyze")
+    async def analyze_meeting(meeting_id: str):
+        """Trigger AI analysis of a meeting."""
+        try:
+            from .jobs.tasks.meeting_tasks import analyze_meeting_transcript
+            
+            # Queue analysis task
+            task = analyze_meeting_transcript.delay(meeting_id)
+            
+            return {
+                "status": "success",
+                "message": "Meeting analysis queued",
+                "task_id": task.id
+            }
+            
+        except Exception as e:
+            logger.error(f"Error queuing meeting analysis: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.post("/api/meetings/{meeting_id}/follow-ups")
+    async def send_meeting_follow_ups(meeting_id: str):
+        """Send follow-up emails and tasks for a meeting."""
+        try:
+            from .jobs.tasks.meeting_tasks import send_meeting_follow_ups
+            
+            # Queue follow-up task
+            task = send_meeting_follow_ups.delay(meeting_id)
+            
+            return {
+                "status": "success",
+                "message": "Meeting follow-ups queued",
+                "task_id": task.id
+            }
+            
+        except Exception as e:
+            logger.error(f"Error queuing meeting follow-ups: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
     
     return app
 

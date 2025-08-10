@@ -5,14 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "reflex-executive-assistant"
 version = "0.1.0"
-description = "AI-driven executive assistant for Spark Robotic"
+description = "AI-powered executive assistant with voice-first interface"
+authors = [
+    {name = "Reflex AI Team", email = "hello@reflex.ai"}
+]
 readme = "README.md"
 requires-python = ">=3.9"
-license = "MIT"
-authors = [
-    { name = "Spark Robotic", email = "sparkroboticai@gmail.com" }
-]
-keywords = ["ai", "assistant", "executive", "productivity", "automation"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: End Users/Desktop",
@@ -21,75 +19,56 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Office/Business",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-
 dependencies = [
-    # Core Framework
     "fastapi>=0.104.0",
     "uvicorn[standard]>=0.24.0",
-    "pydantic>=2.5.0",
-    "pydantic-settings>=2.1.0",
-    
-    # Database
     "sqlalchemy>=2.0.0",
-    "alembic>=1.13.0",
+    "alembic>=1.12.0",
     "psycopg2-binary>=2.9.0",
     "redis>=5.0.0",
-    
-    # AI and ML
-    "openai>=1.3.0",
-    "anthropic>=0.7.0",
-    "langchain>=0.1.0",
-    "langchain-openai>=0.0.5",
-    "langchain-anthropic>=0.1.0",
-    "pinecone-client>=2.2.0",
-    "weaviate-client>=3.25.0",
-    "chromadb>=0.4.0",
-    
-    # Voice Processing
-    "speech-recognition>=3.10.0",
-    "pyttsx3>=2.90",
-    "pydub>=0.25.1",
-    
-    # Background Tasks
     "celery>=5.3.0",
-    "flower>=2.0.0",
-    
-    # HTTP and API
-    "httpx>=0.25.0",
-    "aiohttp>=3.9.0",
-    "requests>=2.31.0",
-    
-    # Authentication and Security
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
     "python-multipart>=0.0.6",
-    
-    # External Integrations
+    "httpx>=0.25.0",
+    "openai>=1.3.0",
+    "langchain>=0.1.0",
+    "langchain-openai>=0.0.2",
+    "pinecone-client>=2.2.0",
     "slack-sdk>=3.26.0",
     "google-auth>=2.23.0",
     "google-auth-oauthlib>=1.1.0",
     "google-auth-httplib2>=0.1.1",
     "google-api-python-client>=2.108.0",
     "asana>=3.2.0",
-    "stripe>=7.8.0",
-    
-    # Monitoring and Observability
-    "prometheus-client>=0.19.0",
     "structlog>=23.2.0",
-    
-    # Utilities
-    "python-dotenv>=1.0.0",
+    "prometheus-client>=0.19.0",
+    "opentelemetry-api>=1.21.0",
+    "opentelemetry-sdk>=1.21.0",
+    "opentelemetry-instrumentation-fastapi>=0.42b0",
+    "opentelemetry-instrumentation-redis>=0.42b0",
+    "opentelemetry-instrumentation-psycopg2>=0.42b0",
     "jinja2>=3.1.0",
-    "markdown>=3.5.0",
-    "python-dateutil>=2.8.2",
-    "pytz>=2023.3",
-    "click>=8.1.0",
-    "rich>=13.7.0",
-    "tqdm>=4.66.0",
+    "python-dotenv>=1.0.0",
+    "stripe>=7.8.0",
+    "sendgrid>=6.10.0",
+    "twilio>=8.10.0",
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.11.0",
+    "ruff>=0.1.0",
+    "mypy>=1.7.0",
+    "bandit>=1.7.0",
+    # Meeting recording dependencies
+    "pyaudio>=0.2.11",
+    "speechrecognition>=3.10.0",
+    "pydub>=0.25.1",
+    "openai-whisper>=20231117",
+    "whisper>=1.1.10",
 ]
 
 [project.optional-dependencies]

@@ -67,6 +67,8 @@ AI: "Based on your data, you're at 87% of Q4 targets.
 - **Intelligent summarization** for different meeting types
 - **Action-item capture** and automatic task creation
 - **Follow-up automation** with meeting summaries and notifications
+- **Executive Control**: Automatic recording and analysis without participant consent
+- **Real-time Processing**: Live transcription and instant insights
 
 ### **Visual Workflow Engine**
 - **Drag-and-drop workflow builder** for non-developers
@@ -280,18 +282,31 @@ We help you organize your business into 11 key areas:
 - **Strategic Focus**: Aligns work with your business goals
 - **Executive Dashboard**: High-level strategic overview
 
-## **Real Results from Real Users**
+## **Key Features & Capabilities**
 
-### **CEO Success Stories**
+### **Voice-First Interface**
+- **Natural Speech Recognition**: Converts voice to text with high accuracy
+- **Real-time Processing**: Instant response to voice commands
+- **Multi-language Support**: Works with multiple languages and accents
+- **Background Noise Handling**: Functions in various meeting environments
 
-**"Reflex saved me 15 hours per week on administrative tasks. I can now focus on strategic decisions and growing our business."**
-- Sarah Chen, CEO of TechFlow Solutions
+### **AI-Powered Automation**
+- **Intelligent Task Creation**: Converts conversations into actionable items
+- **Smart Email Management**: Drafts, sends, and organizes communications
+- **Meeting Transcription**: Automatic recording and analysis of executive meetings
+- **Calendar Integration**: Schedules and manages appointments seamlessly
 
-**"The voice interface is game-changing. I can manage my team and projects while driving or in meetings."**
-- Michael Rodriguez, Founder of Growth Ventures
+### **Business Intelligence**
+- **Data Analysis**: Processes business metrics and performance data
+- **Strategic Insights**: Provides recommendations based on company context
+- **Progress Tracking**: Monitors goals and key performance indicators
+- **Report Generation**: Creates executive summaries and presentations
 
-**"Setup took 10 minutes, and it immediately started helping. No training, no complexity, just results."**
-- Jennifer Park, Executive Director of NonProfit Plus
+### **Integration Capabilities**
+- **Slack Integration**: Responds to messages and manages team communications
+- **Gmail Integration**: Handles email composition, organization, and follow-ups
+- **Asana Integration**: Creates and manages tasks and projects
+- **Calendar Systems**: Works with Google Calendar, Outlook, and other platforms
 
 ## **Security & Privacy**
 

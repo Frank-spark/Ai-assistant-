@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 from sqlalchemy import (
     Column, Integer, String, Text, Boolean, DateTime, JSON, 
-    ForeignKey, Index, UniqueConstraint, CheckConstraint
+    ForeignKey, Index, UniqueConstraint, CheckConstraint, Float
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Mapped, mapped_column
@@ -303,6 +303,41 @@ class Meeting(Base):
         Index("idx_meetings_status", "status"),
         Index("idx_meetings_follow_up", "follow_up_required"),
     )
+
+
+class MeetingTranscript(Base):
+    """Model for storing meeting transcripts."""
+    __tablename__ = "meeting_transcripts"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    meeting_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("meetings.id"), nullable=False, index=True)
+    transcript_text: Mapped[str] = mapped_column(Text, nullable=False)
+    word_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    confidence_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    speaker_diarization: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    
+    # Relationship
+    meeting: Mapped["Meeting"] = relationship("Meeting", back_populates="transcripts")
+
+
+class MeetingAnalysis(Base):
+    """Model for storing AI analysis of meetings."""
+    __tablename__ = "meeting_analyses"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    meeting_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("meetings.id"), nullable=False, index=True)
+    analysis_data: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)
+    summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    action_items_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    decisions_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    risk_level: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # low, medium, high
+    sentiment_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    
+    # Relationship
+    meeting: Mapped["Meeting"] = relationship("Meeting", back_populates="analyses")
 
 
 class WorkflowExecution(Base):
