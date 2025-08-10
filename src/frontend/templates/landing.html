@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        }
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .cta-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-gray-900">Reflex AI</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="#features" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Features</a>
+                    <a href="#pricing" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Pricing</a>
+                    <a href="#contact" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
+                    <a href="/dashboard" class="cta-button text-white px-6 py-2 rounded-lg font-medium">Try Demo</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white pt-24 pb-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="text-5xl md:text-6xl font-bold mb-6">
+                    The AI Assistant That Helps Executives
+                    <span class="block text-yellow-300">Create Exceptional Workplaces</span>
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
+                    Transform your leadership with AI-powered insights, cultural intelligence, and strategic decision support. 
+                    Lead with compassion while driving business results.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="/dashboard" class="cta-button text-white px-8 py-4 rounded-lg text-lg font-semibold inline-flex items-center">
+                        <i class="fas fa-play mr-2"></i>
+                        Try Executive Demo
+                    </a>
+                    <a href="#contact" class="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors">
+                        Schedule Consultation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Benefits -->
+    <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Why Executives Choose Reflex</h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Built specifically for leaders who want to create workplaces where people thrive
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="feature-card bg-gray-50 rounded-lg p-8 text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-heart text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Culture-First Leadership</h3>
+                    <p class="text-gray-600">
+                        Monitor team well-being, track cultural health, and make decisions that consider both business and people impact.
+                    </p>
+                </div>
+                
+                <div class="feature-card bg-gray-50 rounded-lg p-8 text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-microphone text-2xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Voice-First Interface</h3>
+                    <p class="text-gray-600">
+                        Speak naturally to your AI assistant. No typing, no complex interfaces. Just talk like you would to a human.
+                    </p>
+                </div>
+                
+                <div class="feature-card bg-gray-50 rounded-lg p-8 text-center">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-chart-line text-2xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Strategic Intelligence</h3>
+                    <p class="text-gray-600">
+                        AI-powered decision support with cultural context, risk assessment, and strategic alignment analysis.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Executive-Focused Features</h2>
+                <p class="text-xl text-gray-600">
+                    Everything you need to lead with confidence and create exceptional workplaces
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="space-y-8">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-brain text-blue-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Executive Decision Intelligence</h3>
+                            <p class="text-gray-600 mt-2">
+                                AI-powered decision support with cultural impact analysis, risk assessment, and auto-approval for low-risk decisions.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-green-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Cultural Leadership Dashboard</h3>
+                            <p class="text-gray-600 mt-2">
+                                Real-time team sentiment monitoring, culture health metrics, and well-being insights to help you lead with empathy.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-comments text-purple-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Strategic Context Injection</h3>
+                            <p class="text-gray-600 mt-2">
+                                Automatically align all communications with your company values and strategic goals.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-8">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-video text-yellow-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Meeting Automation</h3>
+                            <p class="text-gray-600 mt-2">
+                                Automatic transcription, analysis, and follow-up generation for all your meetings.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-red-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Enterprise Security</h3>
+                            <p class="text-gray-600 mt-2">
+                                Bank-level encryption, compliance ready, and complete data privacy protection.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-bar text-indigo-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Analytics & Insights</h3>
+                            <p class="text-gray-600 mt-2">
+                                Comprehensive analytics on productivity, culture health, and leadership effectiveness.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">See Reflex in Action</h2>
+                <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                    Experience the power of AI-powered executive leadership with our interactive demo
+                </p>
+                <div class="bg-gray-50 rounded-lg p-8 max-w-4xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4">Executive Dashboard Demo</h3>
+                            <ul class="space-y-3 text-left">
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-green-500 mr-3"></i>
+                                    Real-time productivity metrics
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-green-500 mr-3"></i>
+                                    Cultural health insights
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-green-500 mr-3"></i>
+                                    Decision intelligence analytics
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-green-500 mr-3"></i>
+                                    Team alignment tracking
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="text-center">
+                            <a href="/dashboard" class="cta-button text-white px-8 py-4 rounded-lg text-lg font-semibold inline-flex items-center">
+                                <i class="fas fa-play mr-2"></i>
+                                Launch Demo
+                            </a>
+                            <p class="text-sm text-gray-500 mt-2">No setup required • Instant access</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
+                <p class="text-xl text-gray-600">
+                    Choose the plan that fits your leadership needs
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Executive Plan -->
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Executive</h3>
+                    <p class="text-4xl font-bold text-blue-600 mb-4">$299<span class="text-lg text-gray-500">/month</span></p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Unlimited conversations
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Cultural intelligence
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Strategic decision support
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Executive dashboard
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Dedicated success manager
+                        </li>
+                    </ul>
+                    <a href="#contact" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors block text-center">
+                        Get Started
+                    </a>
+                </div>
+                
+                <!-- Enterprise Plan -->
+                <div class="bg-white rounded-lg shadow-lg p-8 border-2 border-blue-500 relative">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium">Most Popular</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
+                    <p class="text-4xl font-bold text-blue-600 mb-4">$599<span class="text-lg text-gray-500">/month</span></p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Everything in Executive
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Multi-executive support
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Advanced analytics
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Custom integrations
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Compliance features
+                        </li>
+                    </ul>
+                    <a href="#contact" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors block text-center">
+                        Get Started
+                    </a>
+                </div>
+                
+                <!-- Culture Transformation -->
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Culture Transformation</h3>
+                    <p class="text-4xl font-bold text-blue-600 mb-4">$1,299<span class="text-lg text-gray-500">/month</span></p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Everything in Enterprise
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Full organizational assessment
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Leadership coaching
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Custom training
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            Quarterly strategy sessions
+                        </li>
+                    </ul>
+                    <a href="#contact" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors block text-center">
+                        Get Started
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Ready to Transform Your Leadership?</h2>
+                <p class="text-xl text-gray-600">
+                    Start your journey to creating exceptional workplaces today
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div>
+                    <h3 class="text-2xl font-semibold text-gray-900 mb-6">Get Started Today</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar text-blue-600 mr-3"></i>
+                            <span class="text-gray-700">Schedule a free consultation</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-play text-blue-600 mr-3"></i>
+                            <span class="text-gray-700">Try our interactive demo</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-blue-600 mr-3"></i>
+                            <span class="text-gray-700">Join our executive community</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 space-y-4">
+                        <p class="text-gray-600">
+                            <strong>Email:</strong> hello@reflex.ai
+                        </p>
+                        <p class="text-gray-600">
+                            <strong>Phone:</strong> 1-800-REFLEX-1
+                        </p>
+                        <p class="text-gray-600">
+                            <strong>Consultation:</strong> <a href="#" class="text-blue-600 hover:underline">Schedule a session</a>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Quick Contact</h3>
+                    <form class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                            <textarea rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+                        <button type="submit" class="w-full cta-button text-white py-3 rounded-lg font-semibold">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Reflex AI</h3>
+                    <p class="text-gray-400">
+                        The AI assistant that helps executives create exceptional workplaces and lead with compassion.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Product</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#features" class="hover:text-white">Features</a></li>
+                        <li><a href="#pricing" class="hover:text-white">Pricing</a></li>
+                        <li><a href="/dashboard" class="hover:text-white">Demo</a></li>
+                        <li><a href="#" class="hover:text-white">API</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">About</a></li>
+                        <li><a href="#" class="hover:text-white">Blog</a></li>
+                        <li><a href="#" class="hover:text-white">Careers</a></li>
+                        <li><a href="#" class="hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">Help Center</a></li>
+                        <li><a href="#" class="hover:text-white">Documentation</a></li>
+                        <li><a href="#" class="hover:text-white">Community</a></li>
+                        <li><a href="#" class="hover:text-white">Status</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 Reflex AI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .metric-card-2 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .metric-card-3 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        .metric-card-4 {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-gray-900">Reflex AI</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-700">
+                        Welcome, {{ user.name }}
+                    </div>
+                    <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {{ user.subscription }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-900">Executive Dashboard</h2>
+            <p class="text-gray-600 mt-2">Your AI-powered leadership insights and analytics</p>
+            <p class="text-sm text-gray-500 mt-1">Last updated: {{ current_time }}</p>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Time Saved -->
+            <div class="metric-card rounded-lg p-6 text-white">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clock text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium opacity-90">Time Saved</p>
+                        <p class="text-2xl font-bold">{{ metrics.time_saved_hours }} hours</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tasks Automated -->
+            <div class="metric-card-2 rounded-lg p-6 text-white">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-robot text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium opacity-90">Tasks Automated</p>
+                        <p class="text-2xl font-bold">{{ metrics.tasks_automated }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Culture Engagement -->
+            <div class="metric-card-3 rounded-lg p-6 text-white">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-heart text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium opacity-90">Culture Score</p>
+                        <p class="text-2xl font-bold">{{ metrics.culture_engagement_score }}%</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decision Confidence -->
+            <div class="metric-card-4 rounded-lg p-6 text-white">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-chart-line text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium opacity-90">Decision Confidence</p>
+                        <p class="text-2xl font-bold">{{ metrics.decision_confidence_avg }}%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Productivity Trends -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Productivity Trends</h3>
+                    <canvas id="productivityChart" width="400" height="200"></canvas>
+                </div>
+
+                <!-- Recent Decisions -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Decisions</h3>
+                    {% if metrics.recent_decisions %}
+                        <div class="space-y-3">
+                            {% for decision in metrics.recent_decisions %}
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <p class="font-medium text-gray-900">{{ decision.title }}</p>
+                                    <p class="text-sm text-gray-600">{{ decision.type }} • {{ decision.created_at }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                        {% if decision.status == 'approved' %}bg-green-100 text-green-800
+                                        {% elif decision.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                        {% else %}bg-red-100 text-red-800{% endif %}">
+                                        {{ decision.status }}
+                                    </span>
+                                    <p class="text-sm text-gray-600 mt-1">{{ decision.confidence }}% confidence</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500 text-center py-4">No recent decisions</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-8">
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                    <div class="space-y-3">
+                        <button class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-microphone mr-2"></i>Start Voice Command
+                        </button>
+                        <button class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-calendar-plus mr-2"></i>Schedule Meeting
+                        </button>
+                        <button class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-chart-bar mr-2"></i>View Analytics
+                        </button>
+                        <button class="w-full bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+                            <i class="fas fa-users mr-2"></i>Team Insights
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Upcoming Meetings -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Upcoming Meetings</h3>
+                    {% if metrics.upcoming_meetings %}
+                        <div class="space-y-3">
+                            {% for meeting in metrics.upcoming_meetings %}
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <p class="font-medium text-gray-900">{{ meeting.title }}</p>
+                                <p class="text-sm text-gray-600">{{ meeting.start_time }}</p>
+                                <p class="text-sm text-gray-500">{{ meeting.participants }} participants</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500 text-center py-4">No upcoming meetings</p>
+                    {% endif %}
+                </div>
+
+                <!-- Cultural Insights -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Cultural Insights</h3>
+                    {% if metrics.cultural_insights %}
+                        <div class="space-y-3">
+                            {% for insight in metrics.cultural_insights %}
+                            <div class="p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <p class="font-medium text-gray-900">{{ insight.metric }}</p>
+                                    <span class="text-sm font-medium
+                                        {% if insight.trend == 'improving' %}text-green-600
+                                        {% elif insight.trend == 'declining' %}text-red-600
+                                        {% else %}text-gray-600{% endif %}">
+                                        {{ insight.value }}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-600">{{ insight.category }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500 text-center py-4">No cultural insights available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Footer -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-around py-3">
+                <a href="/dashboard" class="flex flex-col items-center text-blue-600">
+                    <i class="fas fa-tachometer-alt text-lg"></i>
+                    <span class="text-xs mt-1">Dashboard</span>
+                </a>
+                <a href="/analytics" class="flex flex-col items-center text-gray-400 hover:text-blue-600">
+                    <i class="fas fa-chart-bar text-lg"></i>
+                    <span class="text-xs mt-1">Analytics</span>
+                </a>
+                <a href="/decisions" class="flex flex-col items-center text-gray-400 hover:text-blue-600">
+                    <i class="fas fa-gavel text-lg"></i>
+                    <span class="text-xs mt-1">Decisions</span>
+                </a>
+                <a href="/culture" class="flex flex-col items-center text-gray-400 hover:text-blue-600">
+                    <i class="fas fa-heart text-lg"></i>
+                    <span class="text-xs mt-1">Culture</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Productivity Chart
+        const ctx = document.getElementById('productivityChart').getContext('2d');
+        const productivityData = {{ metrics.productivity_trends | tojson }};
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: productivityData.map(d => d.date),
+                datasets: [{
+                    label: 'Conversations',
+                    data: productivityData.map(d => d.conversations),
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Time Saved (minutes)',
+                    data: productivityData.map(d => d.time_saved),
+                    borderColor: 'rgb(16, 185, 129)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Auto-refresh every 5 minutes
+        setInterval(() => {
+            location.reload();
+        }, 5 * 60 * 1000);
+    </script>
+</body>
+</html> 

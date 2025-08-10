@@ -10,10 +10,12 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 from .config import get_settings, is_production
 from .logging.setup import setup_logging
-from .storage.db import init_db, close_db
+from .storage.db import init_db, close_db, get_db_session
 from .jobs.queue import init_celery, close_celery
 from .integrations.webhooks import slack_router, gmail_router, asana_router
 from .workflows.router import workflow_router
@@ -22,7 +24,7 @@ from .ai.model_switcher import init_model_switcher
 from .ai.ceo_vision_chain import init_ceo_vision_chain
 from .kb.retriever import init_kb_retriever
 from .kb.enhanced_retriever import init_enhanced_kb_retriever
-from .analytics.telemetry import init_telemetry_service
+from .analytics.telemetry import init_telemetry_service, StrategicContext, TeamAlignment, CulturalMetrics, CompanyValues
 from .integrations.hooks import init_hook_manager
 from .web.dashboard import router as dashboard_router
 from .web.landing import router as landing_router
@@ -34,6 +36,13 @@ from .integrations.webhooks.asana import router as asana_webhook_router
 from .integrations.meeting_recorder import get_meeting_manager
 from .ai.decision_engine import get_decision_engine, DecisionRequest, DecisionType, DecisionPriority
 from .ai.context_injector import get_context_injector, CommunicationChannel
+from .frontend.dashboard import get_dashboard
+from .ai.revenue_intelligence import get_revenue_intelligence, OpportunityType, FollowUpType
+from .models.revenue_opportunity import RevenueOpportunity
+from .models.follow_up_task import FollowUpTask
+from .storage.db import RevenueOpportunity, FollowUpTask
+from datetime import datetime, timedelta
+from sqlalchemy import func
 
 # Setup logging
 setup_logging()
@@ -878,6 +887,335 @@ def create_app() -> FastAPI:
             
         except Exception as e:
             logger.error(f"Error getting company values: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    # Dashboard routes
+    @app.get("/dashboard", response_class=HTMLResponse)
+    async def executive_dashboard(request: Request):
+        """Render the executive dashboard."""
+        try:
+            # For demo purposes, use a default user ID
+            # In production, this would come from authentication
+            user_id = "demo_executive_123"
+            
+            dashboard = get_dashboard()
+            return await dashboard.render_dashboard(request, user_id)
+            
+        except Exception as e:
+            logger.error(f"Error rendering dashboard: {e}")
+            raise HTTPException(status_code=500, detail="Dashboard error")
+
+
+    @app.get("/analytics", response_class=HTMLResponse)
+    async def analytics_dashboard(request: Request):
+        """Render the analytics dashboard."""
+        try:
+            user_id = "demo_executive_123"
+            
+            dashboard = get_dashboard()
+            return await dashboard.render_analytics(request, user_id)
+            
+        except Exception as e:
+            logger.error(f"Error rendering analytics: {e}")
+            raise HTTPException(status_code=500, detail="Analytics error")
+
+
+    @app.get("/decisions", response_class=HTMLResponse)
+    async def decisions_dashboard(request: Request):
+        """Render the decisions dashboard."""
+        try:
+            user_id = "demo_executive_123"
+            
+            dashboard = get_dashboard()
+            return await dashboard.render_decisions(request, user_id)
+            
+        except Exception as e:
+            logger.error(f"Error rendering decisions: {e}")
+            raise HTTPException(status_code=500, detail="Decisions error")
+
+
+    @app.get("/culture", response_class=HTMLResponse)
+    async def culture_dashboard(request: Request):
+        """Render the culture insights dashboard."""
+        try:
+            user_id = "demo_executive_123"
+            
+            dashboard = get_dashboard()
+            return await dashboard.render_culture(request, user_id)
+            
+        except Exception as e:
+            logger.error(f"Error rendering culture dashboard: {e}")
+            raise HTTPException(status_code=500, detail="Culture dashboard error")
+
+
+    @app.get("/", response_class=HTMLResponse)
+    async def landing_page(request: Request):
+        """Render the landing page with demo access."""
+        try:
+            return templates.TemplateResponse(
+                "landing.html",
+                {
+                    "request": request,
+                    "page_title": "Reflex AI - Executive AI Assistant"
+                }
+            )
+            
+        except Exception as e:
+            logger.error(f"Error rendering landing page: {e}")
+            raise HTTPException(status_code=500, detail="Landing page error")
+    
+    # Revenue Intelligence endpoints
+    @app.post("/api/revenue/analyze")
+    async def analyze_revenue_opportunities(
+        request: Request,
+        analysis_data: dict = Body(...)
+    ):
+        """Analyze conversation for revenue opportunities."""
+        try:
+            conversation_text = analysis_data.get("conversation_text", "")
+            user_id = analysis_data.get("user_id", "")
+            context = analysis_data.get("context", {})
+            
+            revenue_intelligence = get_revenue_intelligence()
+            opportunities = await revenue_intelligence.analyze_conversation_for_opportunities(
+                conversation_text=conversation_text,
+                user_id=user_id,
+                context=context
+            )
+            
+            return {
+                "status": "success",
+                "opportunities_detected": len(opportunities),
+                "opportunities": [
+                    {
+                        "type": opp.opportunity_type.value,
+                        "company": opp.company_name,
+                        "contact": opp.contact_name,
+                        "estimated_value": opp.estimated_value,
+                        "probability": opp.probability,
+                        "urgency_score": opp.urgency_score,
+                        "description": opp.description,
+                        "key_indicators": opp.key_indicators,
+                        "next_steps": opp.next_steps
+                    }
+                    for opp in opportunities
+                ]
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing revenue opportunities: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.post("/api/revenue/follow-ups")
+    async def generate_follow_up_actions(
+        request: Request,
+        follow_up_data: dict = Body(...)
+    ):
+        """Generate follow-up actions for revenue opportunities."""
+        try:
+            opportunity_data = follow_up_data.get("opportunity", {})
+            user_id = follow_up_data.get("user_id", "")
+            
+            # Create opportunity object
+            from .ai.revenue_intelligence import RevenueOpportunityData, OpportunityType
+            
+            opportunity = RevenueOpportunityData(
+                opportunity_type=OpportunityType(opportunity_data.get("type", "new_customer")),
+                company_name=opportunity_data.get("company", ""),
+                contact_name=opportunity_data.get("contact", ""),
+                contact_email=opportunity_data.get("email", ""),
+                estimated_value=float(opportunity_data.get("estimated_value", 0)),
+                probability=float(opportunity_data.get("probability", 0.5)),
+                timeline_days=int(opportunity_data.get("timeline_days", 30)),
+                description=opportunity_data.get("description", ""),
+                source_conversation=opportunity_data.get("source_conversation", ""),
+                key_indicators=opportunity_data.get("key_indicators", []),
+                next_steps=opportunity_data.get("next_steps", []),
+                urgency_score=float(opportunity_data.get("urgency_score", 0.5))
+            )
+            
+            revenue_intelligence = get_revenue_intelligence()
+            follow_ups = await revenue_intelligence.generate_follow_up_actions(
+                opportunity=opportunity,
+                user_id=user_id
+            )
+            
+            return {
+                "status": "success",
+                "follow_ups_generated": len(follow_ups),
+                "follow_ups": [
+                    {
+                        "type": action.follow_up_type.value,
+                        "priority": action.priority,
+                        "due_date": action.due_date.isoformat(),
+                        "description": action.action_description,
+                        "expected_outcome": action.expected_outcome,
+                        "revenue_impact": action.revenue_impact,
+                        "automation_eligible": action.automation_eligible
+                    }
+                    for action in follow_ups
+                ]
+            }
+            
+        except Exception as e:
+            logger.error(f"Error generating follow-up actions: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.get("/api/revenue/metrics")
+    async def get_revenue_metrics(days: int = 30):
+        """Get revenue intelligence metrics."""
+        try:
+            revenue_intelligence = get_revenue_intelligence()
+            metrics = await revenue_intelligence.track_revenue_metrics(
+                user_id="demo_executive_123",  # For demo purposes
+                days=days
+            )
+            
+            return {
+                "status": "success",
+                "metrics": metrics,
+                "period_days": days
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting revenue metrics: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.get("/api/revenue/opportunities")
+    async def get_revenue_opportunities():
+        """Get all revenue opportunities."""
+        try:
+            db_session = get_db_session()
+            
+            opportunities = db_session.query(RevenueOpportunity).order_by(
+                RevenueOpportunity.created_at.desc()
+            ).limit(50).all()
+            
+            opportunities_data = []
+            for opp in opportunities:
+                opportunities_data.append({
+                    "id": opp.id,
+                    "type": opp.opportunity_type,
+                    "company": opp.company_name,
+                    "contact": opp.contact_name,
+                    "estimated_value": opp.estimated_value,
+                    "probability": opp.probability,
+                    "stage": opp.stage,
+                    "urgency_score": opp.urgency_score,
+                    "created_at": opp.created_at.isoformat(),
+                    "status": opp.status
+                })
+            
+            db_session.close()
+            
+            return {
+                "status": "success",
+                "opportunities": opportunities_data,
+                "count": len(opportunities_data)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting revenue opportunities: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.get("/api/revenue/follow-ups")
+    async def get_follow_up_tasks():
+        """Get all follow-up tasks."""
+        try:
+            db_session = get_db_session()
+            
+            follow_ups = db_session.query(FollowUpTask).order_by(
+                FollowUpTask.due_date.asc()
+            ).limit(50).all()
+            
+            follow_ups_data = []
+            for task in follow_ups:
+                follow_ups_data.append({
+                    "id": task.id,
+                    "type": task.follow_up_type,
+                    "priority": task.priority,
+                    "due_date": task.due_date.isoformat(),
+                    "description": task.action_description,
+                    "expected_outcome": task.expected_outcome,
+                    "revenue_impact": task.revenue_impact,
+                    "completed": task.completed,
+                    "automation_eligible": task.automation_eligible,
+                    "created_at": task.created_at.isoformat()
+                })
+            
+            db_session.close()
+            
+            return {
+                "status": "success",
+                "follow_ups": follow_ups_data,
+                "count": len(follow_ups_data)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting follow-up tasks: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.put("/api/revenue/follow-ups/{task_id}/complete")
+    async def complete_follow_up_task(
+        task_id: int,
+        completion_data: dict = Body(...)
+    ):
+        """Mark a follow-up task as completed."""
+        try:
+            db_session = get_db_session()
+            
+            task = db_session.query(FollowUpTask).filter(FollowUpTask.id == task_id).first()
+            if not task:
+                raise HTTPException(status_code=404, detail="Task not found")
+            
+            task.completed = True
+            task.completed_at = datetime.utcnow()
+            task.completion_notes = completion_data.get("notes", "")
+            
+            db_session.commit()
+            db_session.close()
+            
+            return {
+                "status": "success",
+                "message": "Task completed successfully"
+            }
+            
+        except Exception as e:
+            logger.error(f"Error completing follow-up task: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.put("/api/revenue/opportunities/{opp_id}/stage")
+    async def update_opportunity_stage(
+        opp_id: int,
+        stage_data: dict = Body(...)
+    ):
+        """Update opportunity stage."""
+        try:
+            db_session = get_db_session()
+            
+            opportunity = db_session.query(RevenueOpportunity).filter(RevenueOpportunity.id == opp_id).first()
+            if not opportunity:
+                raise HTTPException(status_code=404, detail="Opportunity not found")
+            
+            opportunity.stage = stage_data.get("stage", opportunity.stage)
+            opportunity.updated_at = datetime.utcnow()
+            
+            db_session.commit()
+            db_session.close()
+            
+            return {
+                "status": "success",
+                "message": "Opportunity stage updated successfully"
+            }
+            
+        except Exception as e:
+            logger.error(f"Error updating opportunity stage: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
     return app

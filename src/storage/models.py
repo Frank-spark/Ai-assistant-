@@ -488,4 +488,98 @@ class CulturalMetrics(Base):
     period_end: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     source: Mapped[str] = mapped_column(String(100), nullable=False)  # survey, system, manual
     trend: Mapped[str] = mapped_column(String(20), nullable=False, default="stable")  # improving, declining, stable
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class UsageLog(Base):
+    """Model for tracking user activity and telemetry."""
+    __tablename__ = "usage_logs"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
+    event_type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    metadata: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    session_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
+    user_agent: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    response_time_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    success: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+
+class RevenueOpportunity(Base):
+    """Model for tracking revenue opportunities."""
+    __tablename__ = "revenue_opportunities"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    opportunity_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    company_name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    contact_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    contact_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    estimated_value: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    probability: Mapped[float] = mapped_column(Float, nullable=False, default=0.5)
+    timeline_days: Mapped[int] = mapped_column(Integer, nullable=False, default=30)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    source_conversation: Mapped[str] = mapped_column(Text, nullable=False)
+    key_indicators: Mapped[List[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
+    next_steps: Mapped[List[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
+    urgency_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.5)
+    stage: Mapped[str] = mapped_column(String(50), nullable=False, default="discovery", index=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="active", index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+
+class FollowUpTask(Base):
+    """Model for tracking follow-up tasks."""
+    __tablename__ = "follow_up_tasks"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    opportunity_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    follow_up_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    priority: Mapped[str] = mapped_column(String(20), nullable=False, default="medium", index=True)
+    due_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    assigned_to: Mapped[str] = mapped_column(String(255), nullable=False)
+    action_description: Mapped[str] = mapped_column(Text, nullable=False)
+    expected_outcome: Mapped[str] = mapped_column(Text, nullable=False)
+    revenue_impact: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    automation_eligible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    completed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    completion_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+
+class SalesPipeline(Base):
+    """Model for tracking sales pipeline stages."""
+    __tablename__ = "sales_pipelines"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    pipeline_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    stage_name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    stage_order: Mapped[int] = mapped_column(Integer, nullable=False)
+    conversion_rate: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    avg_days_in_stage: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+
+class CustomerInteraction(Base):
+    """Model for tracking customer interactions."""
+    __tablename__ = "customer_interactions"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    customer_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    interaction_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # email, call, meeting, chat
+    channel: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # slack, gmail, asana, zoom
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    sentiment_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    opportunity_detected: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    follow_up_required: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)) 
