@@ -365,3 +365,62 @@ class WorkflowExecution(Base):
         Index("idx_workflow_executions_started", "started_at"),
         Index("idx_workflow_executions_completed", "completed_at"),
     ) 
+
+
+class Decision(Base):
+    """Model for tracking executive decisions."""
+    __tablename__ = "decisions"
+    
+    id: Mapped[str] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    decision_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    amount: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    requester: Mapped[str] = mapped_column(String(255), nullable=False)
+    recommendation: Mapped[str] = mapped_column(String(20), nullable=False)  # APPROVE, REJECT, REVIEW
+    confidence_score: Mapped[float] = mapped_column(Float, nullable=False)
+    reasoning: Mapped[str] = mapped_column(Text, nullable=False)
+    risk_assessment: Mapped[str] = mapped_column(String(20), nullable=False)  # Low, Medium, High
+    business_impact: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)
+    compliance_check: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)
+    auto_approval_eligible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    required_approvals: Mapped[List[str]] = mapped_column(ARRAY(String), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")  # pending, approved, rejected
+    approved_by: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    approved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    approval_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+
+class DecisionContext(Base):
+    """Model for storing decision context and business metrics."""
+    __tablename__ = "decision_contexts"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    decision_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("decisions.id"), nullable=False, index=True)
+    context_type: Mapped[str] = mapped_column(String(50), nullable=False)  # performance, goals, budget, risk, etc.
+    context_data: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    
+    # Relationship
+    decision: Mapped["Decision"] = relationship("Decision", back_populates="contexts")
+
+
+class BusinessMetrics(Base):
+    """Model for storing business metrics used in decision making."""
+    __tablename__ = "business_metrics"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    metric_name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    metric_value: Mapped[float] = mapped_column(Float, nullable=False)
+    metric_unit: Mapped[str] = mapped_column(String(20), nullable=True)
+    metric_category: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # financial, operational, customer, etc.
+    period_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    period_end: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    source: Mapped[str] = mapped_column(String(100), nullable=False)  # system, manual, integration
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+# Add relationships to Decision model
+Decision.contexts: Mapped[List["DecisionContext"]] = relationship("DecisionContext", back_populates="decision") 

@@ -32,6 +32,7 @@ from .integrations.webhooks.slack import router as slack_webhook_router
 from .integrations.webhooks.gmail import router as gmail_webhook_router
 from .integrations.webhooks.asana import router as asana_webhook_router
 from .integrations.meeting_recorder import get_meeting_manager
+from .ai.decision_engine import get_decision_engine, DecisionRequest, DecisionType, DecisionPriority
 
 # Setup logging
 setup_logging()
@@ -356,6 +357,300 @@ def create_app() -> FastAPI:
             
         except Exception as e:
             logger.error(f"Error queuing meeting follow-ups: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    # Decision Intelligence endpoints
+    @app.post("/api/decisions/analyze")
+    async def analyze_decision(
+        request: Request,
+        decision_data: dict = Body(...)
+    ):
+        """Analyze a decision request with AI intelligence."""
+        try:
+            # Create decision request
+            decision_request = DecisionRequest(
+                decision_id=str(uuid.uuid4()),
+                decision_type=DecisionType(decision_data.get("type", "approval")),
+                title=decision_data.get("title", ""),
+                description=decision_data.get("description", ""),
+                amount=decision_data.get("amount"),
+                impact_areas=decision_data.get("impact_areas", []),
+                urgency=DecisionPriority(decision_data.get("urgency", "medium")),
+                requester=decision_data.get("requester", ""),
+                context=decision_data.get("context", {})
+            )
+            
+            # Analyze decision
+            decision_engine = get_decision_engine()
+            analysis = await decision_engine.analyze_decision(decision_request)
+            
+            return {
+                "status": "success",
+                "decision_id": decision_request.decision_id,
+                "analysis": {
+                    "recommendation": analysis.recommendation,
+                    "confidence_score": analysis.confidence_score,
+                    "reasoning": analysis.reasoning,
+                    "risk_assessment": analysis.risk_assessment,
+                    "business_impact": analysis.business_impact,
+                    "compliance_check": analysis.compliance_check,
+                    "auto_approval_eligible": analysis.auto_approval_eligible,
+                    "required_approvals": analysis.required_approvals,
+                    "timeline_impact": analysis.timeline_impact,
+                    "cost_benefit_analysis": analysis.cost_benefit_analysis
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing decision: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.get("/api/decisions/{decision_id}")
+    async def get_decision(decision_id: str):
+        """Get decision details and analysis."""
+        try:
+            decision_engine = get_decision_engine()
+            summary = await decision_engine.get_decision_summary(decision_id)
+            
+            return {
+                "status": "success",
+                "decision": summary
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting decision: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.post("/api/decisions/{decision_id}/approve")
+    async def approve_decision(
+        decision_id: str,
+        approval_data: dict = Body(...)
+    ):
+        """Approve a decision."""
+        try:
+            approver = approval_data.get("approver", "")
+            notes = approval_data.get("notes", "")
+            
+            decision_engine = get_decision_engine()
+            success = await decision_engine.approve_decision(decision_id, approver, notes)
+            
+            if success:
+                return {
+                    "status": "success",
+                    "message": "Decision approved successfully"
+                }
+            else:
+                raise HTTPException(status_code=400, detail="Failed to approve decision")
+            
+        except Exception as e:
+            logger.error(f"Error approving decision: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.get("/api/decisions/pending")
+    async def get_pending_decisions():
+        """Get all pending decisions that need attention."""
+        try:
+            # Assuming get_db_session is available or will be added
+            # from .storage.db import get_db_session
+            # from .models.decision import Decision, func
+            # from datetime import datetime
+            
+            # db_session = get_db_session()
+            
+            # pending_decisions = db_session.query(Decision).filter(
+            #     Decision.status == "pending"
+            # ).order_by(Decision.created_at.desc()).all()
+            
+            # decisions = []
+            # for decision in pending_decisions:
+            #     decisions.append({
+            #         "id": decision.id,
+            #         "title": decision.title,
+            #         "decision_type": decision.decision_type,
+            #         "amount": decision.amount,
+            #         "recommendation": decision.recommendation,
+            #         "confidence_score": decision.confidence_score,
+            #         "auto_approval_eligible": decision.auto_approval_eligible,
+            #         "created_at": decision.created_at.isoformat()
+            #     })
+            
+            # db_session.close()
+            
+            # return {
+            #     "status": "success",
+            #     "pending_decisions": decisions,
+            #     "count": len(decisions)
+            # }
+            
+            # Placeholder for actual DB query
+            return {
+                "status": "success",
+                "pending_decisions": [],
+                "count": 0
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting pending decisions: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.get("/api/decisions/auto-approval-eligible")
+    async def get_auto_approval_eligible_decisions():
+        """Get decisions that can be auto-approved."""
+        try:
+            # Assuming get_db_session is available or will be added
+            # from .storage.db import get_db_session
+            # from .models.decision import Decision
+            
+            # db_session = get_db_session()
+            
+            # auto_approval_decisions = db_session.query(Decision).filter(
+            #     Decision.status == "pending",
+            #     Decision.auto_approval_eligible == True
+            # ).order_by(Decision.created_at.desc()).all()
+            
+            # decisions = []
+            # for decision in auto_approval_decisions:
+            #     decisions.append({
+            #         "id": decision.id,
+            #         "title": decision.title,
+            #         "decision_type": decision.decision_type,
+            #         "amount": decision.amount,
+            #         "recommendation": decision.recommendation,
+            #         "confidence_score": decision.confidence_score,
+            #         "created_at": decision.created_at.isoformat()
+            #     })
+            
+            # db_session.close()
+            
+            # return {
+            #     "status": "success",
+            #     "auto_approval_decisions": decisions,
+            #     "count": len(decisions)
+            # }
+            
+            # Placeholder for actual DB query
+            return {
+                "status": "success",
+                "auto_approval_decisions": [],
+                "count": 0
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting auto-approval decisions: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.post("/api/decisions/auto-approve-all")
+    async def auto_approve_eligible_decisions():
+        """Auto-approve all eligible decisions."""
+        try:
+            # Assuming get_db_session is available or will be added
+            # from .storage.db import get_db_session
+            # from .models.decision import Decision
+            
+            # db_session = get_db_session()
+            
+            # # Get auto-approval eligible decisions
+            # eligible_decisions = db_session.query(Decision).filter(
+            #     Decision.status == "pending",
+            #     Decision.auto_approval_eligible == True
+            # ).all()
+            
+            # approved_count = 0
+            # for decision in eligible_decisions:
+            #     decision.status = "approved"
+            #     decision.approved_by = "system"
+            #     decision.approved_at = datetime.utcnow()
+            #     decision.approval_notes = "Auto-approved by system"
+            #     approved_count += 1
+            
+            # db_session.commit()
+            # db_session.close()
+            
+            # return {
+            #     "status": "success",
+            #     "message": f"Auto-approved {approved_count} decisions",
+            #     "approved_count": approved_count
+            # }
+            
+            # Placeholder for actual DB query
+            return {
+                "status": "success",
+                "message": "Auto-approve-all endpoint called (placeholder)",
+                "approved_count": 0
+            }
+            
+        except Exception as e:
+            logger.error(f"Error auto-approving decisions: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.get("/api/decisions/analytics")
+    async def get_decision_analytics():
+        """Get analytics on decision patterns and outcomes."""
+        try:
+            # Assuming get_db_session is available or will be added
+            # from .storage.db import get_db_session
+            # from .models.decision import Decision, func
+            
+            # db_session = get_db_session()
+            
+            # # Get decision statistics
+            # total_decisions = db_session.query(Decision).count()
+            # approved_decisions = db_session.query(Decision).filter(
+            #     Decision.status == "approved"
+            # ).count()
+            # rejected_decisions = db_session.query(Decision).filter(
+            #     Decision.status == "rejected"
+            # ).count()
+            # pending_decisions = db_session.query(Decision).filter(
+            #     Decision.status == "pending"
+            # ).count()
+            
+            # # Get average confidence scores
+            # avg_confidence = db_session.query(func.avg(Decision.confidence_score)).scalar() or 0
+            
+            # # Get decision types breakdown
+            # decision_types = db_session.query(
+            #     Decision.decision_type,
+            #     func.count(Decision.id)
+            # ).group_by(Decision.decision_type).all()
+            
+            # db_session.close()
+            
+            # return {
+            #     "status": "success",
+            #     "analytics": {
+            #         "total_decisions": total_decisions,
+            #         "approved_decisions": approved_decisions,
+            #         "rejected_decisions": rejected_decisions,
+            #         "pending_decisions": pending_decisions,
+            #         "approval_rate": (approved_decisions / total_decisions * 100) if total_decisions > 0 else 0,
+            #         "average_confidence_score": round(avg_confidence, 2),
+            #         "decision_types_breakdown": dict(decision_types)
+            #     }
+            # }
+            
+            # Placeholder for actual DB query
+            return {
+                "status": "success",
+                "analytics": {
+                    "total_decisions": 0,
+                    "approved_decisions": 0,
+                    "rejected_decisions": 0,
+                    "pending_decisions": 0,
+                    "approval_rate": 0,
+                    "average_confidence_score": 0,
+                    "decision_types_breakdown": {}
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting decision analytics: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
     return app
