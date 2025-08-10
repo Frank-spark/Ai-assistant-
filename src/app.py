@@ -33,6 +33,7 @@ from .integrations.webhooks.gmail import router as gmail_webhook_router
 from .integrations.webhooks.asana import router as asana_webhook_router
 from .integrations.meeting_recorder import get_meeting_manager
 from .ai.decision_engine import get_decision_engine, DecisionRequest, DecisionType, DecisionPriority
+from .ai.context_injector import get_context_injector, CommunicationChannel
 
 # Setup logging
 setup_logging()
@@ -651,6 +652,232 @@ def create_app() -> FastAPI:
             
         except Exception as e:
             logger.error(f"Error getting decision analytics: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    # Strategic Context Injection endpoints
+    @app.post("/api/context/inject")
+    async def inject_strategic_context(
+        request: Request,
+        context_data: dict = Body(...)
+    ):
+        """Inject strategic context into communication content."""
+        try:
+            content = context_data.get("content", "")
+            channel = CommunicationChannel(context_data.get("channel", "slack"))
+            user_id = context_data.get("user_id", "")
+            team_id = context_data.get("team_id")
+            
+            context_injector = get_context_injector()
+            injection = await context_injector.inject_context(
+                content=content,
+                channel=channel,
+                user_id=user_id,
+                team_id=team_id
+            )
+            
+            return {
+                "status": "success",
+                "original_content": injection.original_message,
+                "injected_content": injection.content,
+                "context_injection": injection.injected_context,
+                "alignment_score": injection.alignment_score,
+                "cultural_relevance": injection.cultural_relevance,
+                "context_type": injection.context_type.value
+            }
+            
+        except Exception as e:
+            logger.error(f"Error injecting strategic context: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.get("/api/context/analytics")
+    async def get_context_analytics():
+        """Get analytics on strategic context injection effectiveness."""
+        try:
+            db_session = get_db_session()
+            
+            # Get context injection statistics
+            total_injections = db_session.query(StrategicContext).count()
+            recent_injections = db_session.query(StrategicContext).filter(
+                StrategicContext.created_at >= datetime.utcnow() - timedelta(days=7)
+            ).count()
+            
+            # Get average alignment scores
+            avg_alignment = db_session.query(func.avg(StrategicContext.alignment_score)).scalar() or 0
+            avg_cultural_relevance = db_session.query(func.avg(StrategicContext.cultural_relevance)).scalar() or 0
+            
+            # Get context types breakdown
+            context_types = db_session.query(
+                StrategicContext.context_type,
+                func.count(StrategicContext.id)
+            ).group_by(StrategicContext.context_type).all()
+            
+            # Get channel breakdown
+            channels = db_session.query(
+                StrategicContext.channel,
+                func.count(StrategicContext.id)
+            ).group_by(StrategicContext.channel).all()
+            
+            db_session.close()
+            
+            return {
+                "status": "success",
+                "analytics": {
+                    "total_injections": total_injections,
+                    "recent_injections": recent_injections,
+                    "average_alignment_score": round(avg_alignment, 2),
+                    "average_cultural_relevance": round(avg_cultural_relevance, 2),
+                    "context_types_breakdown": dict(context_types),
+                    "channels_breakdown": dict(channels)
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting context analytics: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.get("/api/context/team-alignment")
+    async def get_team_alignment():
+        """Get team alignment with strategic goals."""
+        try:
+            db_session = get_db_session()
+            
+            # Get team alignment data
+            alignments = db_session.query(TeamAlignment).filter(
+                TeamAlignment.active == True
+            ).order_by(TeamAlignment.alignment_score.desc()).all()
+            
+            teams = []
+            for alignment in alignments:
+                teams.append({
+                    "team_id": alignment.team_id,
+                    "team_name": alignment.team_name,
+                    "goal_name": alignment.goal_name,
+                    "alignment_score": alignment.alignment_score,
+                    "progress_percentage": alignment.progress_percentage,
+                    "last_assessment": alignment.last_assessment.isoformat(),
+                    "next_assessment": alignment.next_assessment.isoformat()
+                })
+            
+            db_session.close()
+            
+            return {
+                "status": "success",
+                "team_alignments": teams,
+                "count": len(teams)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting team alignment: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.get("/api/context/cultural-metrics")
+    async def get_cultural_metrics():
+        """Get cultural health metrics."""
+        try:
+            db_session = get_db_session()
+            
+            # Get recent cultural metrics
+            recent_metrics = db_session.query(CulturalMetrics).filter(
+                CulturalMetrics.period_end >= datetime.utcnow() - timedelta(days=30)
+            ).order_by(CulturalMetrics.created_at.desc()).all()
+            
+            metrics = []
+            for metric in recent_metrics:
+                metrics.append({
+                    "metric_name": metric.metric_name,
+                    "metric_value": metric.metric_value,
+                    "metric_category": metric.metric_category,
+                    "team_id": metric.team_id,
+                    "trend": metric.trend,
+                    "period_end": metric.period_end.isoformat()
+                })
+            
+            db_session.close()
+            
+            return {
+                "status": "success",
+                "cultural_metrics": metrics,
+                "count": len(metrics)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting cultural metrics: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.post("/api/context/values")
+    async def update_company_values(
+        request: Request,
+        values_data: dict = Body(...)
+    ):
+        """Update company values and cultural principles."""
+        try:
+            db_session = get_db_session()
+            
+            # Create or update company values
+            for value in values_data.get("values", []):
+                existing_value = db_session.query(CompanyValues).filter(
+                    CompanyValues.value_name == value["name"]
+                ).first()
+                
+                if existing_value:
+                    existing_value.value_description = value["description"]
+                    existing_value.value_category = value["category"]
+                    existing_value.priority_level = value.get("priority", 1)
+                    existing_value.updated_at = datetime.utcnow()
+                else:
+                    new_value = CompanyValues(
+                        value_name=value["name"],
+                        value_description=value["description"],
+                        value_category=value["category"],
+                        priority_level=value.get("priority", 1)
+                    )
+                    db_session.add(new_value)
+            
+            db_session.commit()
+            db_session.close()
+            
+            return {
+                "status": "success",
+                "message": "Company values updated successfully"
+            }
+            
+        except Exception as e:
+            logger.error(f"Error updating company values: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+    @app.get("/api/context/values")
+    async def get_company_values():
+        """Get current company values and cultural principles."""
+        try:
+            db_session = get_db_session()
+            
+            values = db_session.query(CompanyValues).filter(
+                CompanyValues.active == True
+            ).order_by(CompanyValues.priority_level, CompanyValues.value_name).all()
+            
+            company_values = []
+            for value in values:
+                company_values.append({
+                    "name": value.value_name,
+                    "description": value.value_description,
+                    "category": value.value_category,
+                    "priority": value.priority_level
+                })
+            
+            db_session.close()
+            
+            return {
+                "status": "success",
+                "company_values": company_values
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting company values: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
     return app

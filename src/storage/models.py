@@ -423,4 +423,69 @@ class BusinessMetrics(Base):
 
 
 # Add relationships to Decision model
-Decision.contexts: Mapped[List["DecisionContext"]] = relationship("DecisionContext", back_populates="decision") 
+Decision.contexts: Mapped[List["DecisionContext"]] = relationship("DecisionContext", back_populates="decision")
+
+
+class StrategicContext(Base):
+    """Model for tracking strategic context injections."""
+    __tablename__ = "strategic_contexts"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    team_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
+    context_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    channel: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    original_content: Mapped[str] = mapped_column(Text, nullable=False)
+    injected_content: Mapped[str] = mapped_column(Text, nullable=False)
+    final_content: Mapped[str] = mapped_column(Text, nullable=False)
+    alignment_score: Mapped[float] = mapped_column(Float, nullable=False)
+    cultural_relevance: Mapped[float] = mapped_column(Float, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class CompanyValues(Base):
+    """Model for storing company values and cultural principles."""
+    __tablename__ = "company_values"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    value_name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    value_description: Mapped[str] = mapped_column(Text, nullable=False)
+    value_category: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # core, cultural, operational
+    priority_level: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+
+class TeamAlignment(Base):
+    """Model for tracking team alignment with strategic goals."""
+    __tablename__ = "team_alignments"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    team_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    team_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    goal_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    goal_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    alignment_score: Mapped[float] = mapped_column(Float, nullable=False)
+    progress_percentage: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    last_assessment: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    next_assessment: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+
+class CulturalMetrics(Base):
+    """Model for tracking cultural health metrics."""
+    __tablename__ = "cultural_metrics"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    metric_name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    metric_value: Mapped[float] = mapped_column(Float, nullable=False)
+    metric_category: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # engagement, satisfaction, well_being, diversity
+    team_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
+    period_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    period_end: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    source: Mapped[str] = mapped_column(String(100), nullable=False)  # survey, system, manual
+    trend: Mapped[str] = mapped_column(String(20), nullable=False, default="stable")  # improving, declining, stable
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)) 
